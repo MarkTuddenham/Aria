@@ -1,27 +1,46 @@
-.PHONY: clean compile 
+.PHONY: clean compile run
 .DEFAULT_GOAL: compile
 
-COMPILER = g++
-CCFLAGS = -Wall
-TMP_DIR = tmp
-BUILD_DIR = build
-SRC_DIR = src
+CC := g++
+CCFLAGS := -pthread -Wall -Wextra -D_GLIBCXX_USE_CXX11_ABI=0
+LINKFLAGS := 
+
+RM := rm
+
+TMP_PATH := ./tmp/
+BUILD_PATH := ./build/
+SRC_PATH := ./src/
+INC_PATH := -I ./include
 # CLEAN_IGNORE = "makefile|.git|.gitignore|.vscode|README.md"
 
-OUT_FILE = run.out
+TARGET := run.out
+
+# Files to compile
+OBJS = run.o board.o piece.o
+OBJ = $(patsubst %,$(BUILD_PATH)%,$(OBJS))
 
 
+compile: $(BUILD_PATH) $(TARGET)
 
-compile: $(BUILD_DIR)/ $(OUT_FILE)
+run: compile
+	@echo [RUNNING] $(TARGET)
+	@./$(TARGET)
 
-clean: 
-	-@rm -r $(TMP_DIR)/
-	-@rm -r $(BUILD_DIR)/
-	# ls -A | grep -vE $(CLEAN_IGNORE) | xargs -rt rm
+# Build .o first
+$(BUILD_PATH)%.o: $(SRC_PATH)%.cpp
+	@echo [CC] $<
+	@$(CC) $(CCFLAGS) -o $@ -c $< $(INC_PATH)
 
-$(OUT_FILE): $(SRC_DIR)/run.cpp
-	$(COMPILER) -pthread $(CCFLAGS) -o $@ $^
-	-@mv *.o $(BUILD_DIR)
+# Build final binary
+$(TARGET): $(OBJ)
+	@echo [INFO] Creating Binary Executable :- $(TARGET)
+	@$(CC) -o $@ $^ $(LINKFLAGS)
 
-$(BUILD_DIR)/:
-	if [ ! -d $(BUILD_DIR) ]; then mkdir $(BUILD_DIR); fi
+clean:
+	@echo "[Cleaning]"
+	@$(RM) -rfv $(BUILD_PATH)*
+	@$(RM) -rfv $(TMP_PATH)*
+	@$(RM) -rfv $(TARGET)
+
+$(BUILD_PATH):
+	if [ ! -d $(BUILD_PATH) ]; then mkdir $(BUILD_PATH); fi

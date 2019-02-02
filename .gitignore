@@ -1,3 +1,9 @@
+# Proj specific
+build/
+tmp/
+.vscode/
+
+
 # Prerequisites
 *.d
 
