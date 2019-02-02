@@ -15,5 +15,17 @@ int main()
 
     cb.prettyPrint();
 
+    std::cout << cb.getTurn() << std::endl;
+    cb.move(3, 28);
+    std::cout << cb.getTurn() << std::endl;
+    cb.move(91, 20); // Should fail
+    std::cout << cb.getTurn() << std::endl;
+    cb.move({2,6}, {2,5});
+    std::cout << cb.getTurn() << std::endl;
+
+
+    cb.prettyPrint();
+
+
     return 0;
 }

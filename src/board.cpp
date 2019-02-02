@@ -12,40 +12,40 @@ ChessBoard::ChessBoard()
     // White pawns (1,0) -> (1,7)
     for (int i = 8; i < 16; i++)
     {
-        pieces.insert(std::pair<int, ChessPiece>(i, ChessPiece(WHITE, PAWN)));
+        pieces.insert({i, ChessPiece(WHITE, PAWN)});
     }
 
     // Black pawns (6,0) -> (6,7)
     for (int i = 48; i < 56; i++)
     {
-        pieces.insert(std::pair<int, ChessPiece>(i, ChessPiece(BLACK, PAWN)));
+        pieces.insert({i, ChessPiece(BLACK, PAWN)});
     }
 
     // Knights
-    pieces.insert(std::pair<int, ChessPiece>(1, ChessPiece(WHITE, KNIGHT)));
-    pieces.insert(std::pair<int, ChessPiece>(6, ChessPiece(WHITE, KNIGHT)));
-    pieces.insert(std::pair<int, ChessPiece>(57, ChessPiece(BLACK, KNIGHT)));
-    pieces.insert(std::pair<int, ChessPiece>(62, ChessPiece(BLACK, KNIGHT)));
+    pieces.insert({1, ChessPiece(WHITE, KNIGHT)});
+    pieces.insert({6, ChessPiece(WHITE, KNIGHT)});
+    pieces.insert({57, ChessPiece(BLACK, KNIGHT)});
+    pieces.insert({62, ChessPiece(BLACK, KNIGHT)});
 
     // Bishops
-    pieces.insert(std::pair<int, ChessPiece>(2, ChessPiece(WHITE, BISHOP)));
-    pieces.insert(std::pair<int, ChessPiece>(5, ChessPiece(WHITE, BISHOP)));
-    pieces.insert(std::pair<int, ChessPiece>(58, ChessPiece(BLACK, BISHOP)));
-    pieces.insert(std::pair<int, ChessPiece>(61, ChessPiece(BLACK, BISHOP)));
+    pieces.insert({2, ChessPiece(WHITE, BISHOP)});
+    pieces.insert({5, ChessPiece(WHITE, BISHOP)});
+    pieces.insert({58, ChessPiece(BLACK, BISHOP)});
+    pieces.insert({61, ChessPiece(BLACK, BISHOP)});
 
     // Rooks
-    pieces.insert(std::pair<int, ChessPiece>(0, ChessPiece(WHITE, ROOK)));
-    pieces.insert(std::pair<int, ChessPiece>(7, ChessPiece(WHITE, ROOK)));
-    pieces.insert(std::pair<int, ChessPiece>(56, ChessPiece(BLACK, ROOK)));
-    pieces.insert(std::pair<int, ChessPiece>(63, ChessPiece(BLACK, ROOK)));
+    pieces.insert({0, ChessPiece(WHITE, ROOK)});
+    pieces.insert({7, ChessPiece(WHITE, ROOK)});
+    pieces.insert({56, ChessPiece(BLACK, ROOK)});
+    pieces.insert({63, ChessPiece(BLACK, ROOK)});
 
     // Queens
-    pieces.insert(std::pair<int, ChessPiece>(3, ChessPiece(WHITE, QUEEN)));
-    pieces.insert(std::pair<int, ChessPiece>(59, ChessPiece(BLACK, QUEEN)));
+    pieces.insert({3, ChessPiece(WHITE, QUEEN)});
+    pieces.insert({59, ChessPiece(BLACK, QUEEN)});
 
     // Kings
-    pieces.insert(std::pair<int, ChessPiece>(4, ChessPiece(WHITE, KING)));
-    pieces.insert(std::pair<int, ChessPiece>(60, ChessPiece(BLACK, KING)));
+    pieces.insert({4, ChessPiece(WHITE, KING)});
+    pieces.insert({60, ChessPiece(BLACK, KING)});
 
     std::cout << "Created " << pieces.size() << " pieces." << std::endl;
 }
@@ -58,6 +58,38 @@ int ChessBoard::getNumMoves() const
 const std::map<int, ChessPiece> *ChessBoard::getPieces() const
 {
     return &pieces;
+}
+
+PieceColour ChessBoard::getTurn() const
+{
+    return turn;
+}
+
+void ChessBoard::move(int from, int to)
+{
+
+    //TODO track taken pieces
+    //TODO check legal move
+    //TODO throw some error if no piece to move
+    //TODO check piece is of the correct colour
+
+    // Check piece exists
+    if (pieces.find(from) != pieces.end())
+    {
+        // Add piece in its new place
+        pieces[to] = pieces[from];
+
+        // remove piece from old position
+        pieces.erase(from);
+
+        // Swap turns
+        turn = PieceColour((turn + 1) % 2);
+    }
+}
+
+void ChessBoard::move(std::pair<int, int> from, std::pair<int, int> to)
+{
+    move(getIndexFromCoords(from), getIndexFromCoords(to));
 }
 
 void ChessBoard::print(std::ostream &os) const
@@ -76,16 +108,18 @@ void ChessBoard::prettyPrint(std::ostream &os) const
 {
     char sym;
 
-    std::cout << "---------------------------------" << std::endl;
+    os << std::endl
+       << "  ---------------------------------" << std::endl;
 
     for (int y = 7; y >= 0; y--)
     {
-        for (int x = 7; x >= 0; x--)
+        os << y << " ";
+        for (int x = 0; x < 8; x++)
         {
 
             try
             {
-                sym = pieces.at(getIndexFromCoords(std::pair<int, int>(x, y))).getSymbol();
+                sym = pieces.at(getIndexFromCoords({x, y})).getSymbol();
             }
             catch (const std::out_of_range &e)
             {
@@ -97,17 +131,18 @@ void ChessBoard::prettyPrint(std::ostream &os) const
                << " ";
         }
         os << "|" << std::endl
-           << "---------------------------------" << std::endl;
+           << "  ---------------------------------" << std::endl;
     }
+
+    os << "    0   1   2   3   4   5   6   7  " << std::endl << std::endl;
 }
 
 void ChessBoard::prettyPrint() const { prettyPrint(std::cout); }
 
-
 // Helper functions.
 std::pair<int, int> getCoordsFromIndex(int index)
 {
-    return std::pair<int, int>(index % 8, index / 8);
+    return {index % 8, index / 8};
 }
 
 int getIndexFromCoords(std::pair<int, int> coords)
