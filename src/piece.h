@@ -1,15 +1,36 @@
 #pragma once
 
-#include <string>
+#include <iostream>
+
+enum PieceType
+{
+    PAWN,
+    KNIGHT,
+    BISHOP,
+    ROOK,
+    QUEEN,
+    KING
+};
+
+enum PieceColour
+{
+    WHITE,
+    BLACK
+};
 
 class ChessPiece
 {
   private:
-    int pieceVal = 0;
-    std::string name;
+    PieceColour col;
+    PieceType type;
 
   public:
     ChessPiece();
-    std::string getName() const;
-    void setName(std::string name);
+    ChessPiece(PieceColour, PieceType);
+    PieceType getType() const;
+    PieceColour getColour() const;
+
+    char getSymbol() const;
+
+    friend std::ostream &operator<<(std::ostream &os, ChessPiece const &cp);
 };

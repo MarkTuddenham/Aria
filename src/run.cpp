@@ -13,12 +13,7 @@ int main()
 
     std::cout << "Number of moves: " << cb.getNumMoves() << std::endl;
 
-    ChessPiece p;
-
-    p.setName("Queen");
-
-    std::cout << "Piece: " << p.getName() << std::endl;
-    std::cout << "Piece on board: " << cb.getPieces()[0].getName() << std::endl;
+    cb.prettyPrint();
 
     return 0;
 }
