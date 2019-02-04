@@ -67,15 +67,22 @@ PieceColour ChessBoard::getTurn() const
 
 void ChessBoard::move(int from, int to)
 {
+    bool doTurn = true;
 
-    //TODO track taken pieces
+    // check if there is a piece to move
+    if (pieces.find(from) == pieces.end()) doTurn = false;
+
+    // check piece is of the correct colour
+    if (pieces[from].getColour() != getTurn()) doTurn = false;
+
     //TODO check legal move
-    //TODO throw some error if no piece to move
-    //TODO check piece is of the correct colour
+    // if (!getLegalMoves()[from].contains(to)) doTurn = false;
 
     // Check piece exists
-    if (pieces.find(from) != pieces.end())
+    if (doTurn)
     {
+        //TODO track taken pieces
+
         // Add piece in its new place
         pieces[to] = pieces[from];
 
