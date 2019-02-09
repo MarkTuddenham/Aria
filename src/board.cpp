@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <map>
+#include <vector>
 
 ChessBoard::ChessBoard() { init(); }
 ChessBoard::ChessBoard(bool debug) : debug(debug) { init(); }
@@ -96,17 +97,23 @@ void ChessBoard::move(int from, int to)
 
     // check if there is a piece to move
     if (!p)
+    {
+        std::cerr << "Invalid move! Continuing.." << std::endl;
         return;
+    }
 
     // check piece is of the correct colour
     if (!debug && p->getColour() != getTurn())
+    {
+        std::cerr << "Invalid move! Continuing.." << std::endl;
         return;
+    }
 
     //TODO check legal move
     // if (!debug && !getLegalMoves(from).contains(to)) return;
 
     {
-        //TODO track taken pieces
+        //TODO record moves & track taken pieces
 
         // Add piece in its new place
         pieces[to] = pieces[from];
@@ -141,13 +148,16 @@ void ChessBoard::generateMoves()
 void ChessBoard::generatePieceMoves(int ind)
 {
     // TODO detect if places in check
-    // TODO check out of bounds.
 
     // get piece from board
     const ChessPiece *p = getPiece(ind);
+    const Position pos = getPosFromIndex(ind);
 
     if (!p)
+    {
+        std::cerr << "Unknow Piece!" << std::endl;
         return;
+    }
 
     MoveList *pieceMoves = &moves[(ChessPiece *)p];
     pieceMoves->clear();
@@ -156,27 +166,31 @@ void ChessBoard::generatePieceMoves(int ind)
     {
     case PAWN:
     {
-        //TODO rotate based on colour which only applies to pawns.
+        //rotate based on colour -> only applies to pawns.
+        int rotate = (p->getColour() == WHITE) ? 1 : -1;
 
-        int moveInd;
+        Position relPos, absPos;
 
         // Check forward move
-        moveInd = ind + 8;
-        const ChessPiece *inFrontPiece = getPiece(moveInd);
-        if (!inFrontPiece && !outOfBounds(moveInd))
-            pieceMoves->push_back(moveInd);
+        relPos = {0, 1};
+        absPos = pos + relPos * rotate;
+        const ChessPiece *inFrontPiece = getPiece(absPos);
+        if (!inFrontPiece && !outOfBounds(absPos))
+            pieceMoves->push_back(getIndexFromPos(absPos));
 
         // Check capturing moves
         // if there exist a piece then the move can't be out of bounds.
-        moveInd = ind + 7;
-        const ChessPiece *capLeft = getPiece(moveInd);
+        relPos = {-1, 1};
+        absPos = pos + relPos * rotate;
+        const ChessPiece *capLeft = getPiece(absPos);
         if (capLeft && capLeft->getColour() != p->getColour())
-            pieceMoves->push_back(moveInd);
+            pieceMoves->push_back(getIndexFromPos(absPos));
 
-        moveInd = ind + 9;
-        const ChessPiece *capRight = getPiece(moveInd);
+        relPos = {1, 1};
+        absPos = pos + relPos * rotate;
+        const ChessPiece *capRight = getPiece(absPos);
         if (capRight && capRight->getColour() != p->getColour())
-            pieceMoves->push_back(moveInd);
+            pieceMoves->push_back(getIndexFromPos(absPos));
 
         // TODO en passant
 
@@ -185,11 +199,11 @@ void ChessBoard::generatePieceMoves(int ind)
 
     case KNIGHT:
     {
-        int relativeMoves[8] = {6, 15, 17, 10, -6, -15, -17, -10};
+        std::vector<Position> relativeMoves = {{1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}};
 
         for (int i = 0; i < 8; i++)
         {
-            int absMovePos = ind + relativeMoves[i];
+            Position absMovePos = getPosFromIndex(ind) + relativeMoves[i];
 
             if (outOfBounds(absMovePos))
                 continue;
@@ -198,30 +212,39 @@ void ChessBoard::generatePieceMoves(int ind)
 
             // If there is not a piece, or the piece is capturable
             if (!toPiece || (toPiece && toPiece->getColour() != p->getColour()))
-                pieceMoves->push_back(absMovePos);
+                pieceMoves->push_back(getIndexFromPos(absMovePos));
         }
     }
     break;
 
     case BISHOP:
-        /* code */
-        break;
+    {
+        Position dirs[] = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        adInfinitum(ind, dirs, 4, pieceMoves);
+    }
+    break;
 
     case ROOK:
-        /* code */
-        break;
+    {
+        Position dirs[] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+        adInfinitum(ind, dirs, 4, pieceMoves);
+    }
+    break;
 
     case QUEEN:
-        /* code */
-        break;
+    {
+        Position dirs[] = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}, {0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+        adInfinitum(ind, dirs, 8, pieceMoves);
+    }
+    break;
 
     case KING:
     {
-        int relativeMoves[8] = {7, 8, 9, 1, -7, -8, -9, -1};
+        Position relativeMoves[8] = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}, {0, 1}, {1, 0}, {0, -1}, {-1, 0}};
 
         for (int i = 0; i < 8; i++)
         {
-            int absMovePos = ind + relativeMoves[i];
+            Position absMovePos = pos + relativeMoves[i];
 
             if (outOfBounds(absMovePos))
                 continue;
@@ -230,20 +253,64 @@ void ChessBoard::generatePieceMoves(int ind)
 
             // If there is not a piece, or the piece is capturable
             if (!toPiece || (toPiece && toPiece->getColour() != p->getColour()))
-                pieceMoves->push_back(absMovePos);
+                pieceMoves->push_back(getIndexFromPos(absMovePos));
         }
     }
     break;
 
     default:
         // TODO raise error
+        std::cerr << "Unknown Piece!!" << std::endl;
         break;
+    }
+}
+
+void ChessBoard::adInfinitum(int ind, Position dirs[], int dirsSize, MoveList *moves)
+{
+    Position pos = getPosFromIndex(ind);
+    const ChessPiece *p = getPiece(ind);
+    Position toPos;
+    const ChessPiece *toPiece;
+
+    // for each direction
+    for (int i = 0; i < dirsSize; i++)
+    {
+        Position dir = dirs[i];
+        // can only be a max of 7 iterations before going out of bounds
+        // so no not really Ad Infinitum...
+        // start at 1 since 0 will be the from position.
+        for (int i = 1; i < 8; i++)
+        {
+            toPos = pos + dir * i;
+            if (outOfBounds(toPos))
+                break;
+
+            toPiece = getPiece(toPos);
+
+            if (!toPiece)
+            {
+                moves->push_back(getIndexFromPos(toPos));
+                // Found no piece: Keep looking in this direction.
+                continue;
+            }
+            else if (toPiece->getColour() != p->getColour())
+            {
+                moves->push_back(getIndexFromPos(toPos));
+                // Found enemy piece: Stop looking in this direction.
+                break;
+            }
+            else
+            {
+                // Found own piece: Stop looking in this direction.
+                break;
+            }
+        }
     }
 }
 
 const MoveList *ChessBoard::getMoves(ChessPiece *p) const
 {
-    // TODO throw error
+    // TODO throw error?
     if (!p)
         return nullptr;
 
@@ -326,13 +393,34 @@ int getIndexFromPos(Position pos)
     return pos.first + pos.second * 8;
 }
 
-bool outOfBounds(int ind)
+bool outOfBounds(Position pos)
 {
-    return ind < 0 || ind > 63;
+    return (
+        pos.first < 0 ||
+        pos.first > 7 ||
+        pos.second < 0 ||
+        pos.second > 7
+
+    );
 }
 
 std::ostream &operator<<(std::ostream &os, Position const &pos)
 {
     os << "(" << pos.first << "," << pos.second << ")";
     return os;
+}
+
+Position operator+(const Position &p1, const Position &p2)
+{
+    return {p1.first + p2.first, p1.second + p2.second};
+}
+
+Position operator*(const Position &p, const int &i)
+{
+    return {p.first * i, p.second * i};
+}
+
+Position operator*(const int &i, const Position &p)
+{
+    return p * i; // use other operator overload
 }

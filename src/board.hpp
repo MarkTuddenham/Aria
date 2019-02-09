@@ -25,6 +25,7 @@ private:
   void init();
   void generateMoves();
   void generatePieceMoves(int);
+  void adInfinitum(int, Position[], int, MoveList *);
 
   // const functions (or ones with value return)
 public:
@@ -58,5 +59,10 @@ public:
 
 Position getPosFromIndex(int);
 int getIndexFromPos(Position);
-bool outOfBounds(int);
+// bool outOfBounds(int);  // outOfBounds() Usually used when adding relative pos to abs pos, don't do this with indexes!
+bool outOfBounds(Position);
+
 std::ostream &operator<<(std::ostream &os, Position const &pos);
+Position operator+(const Position &p1, const Position &p2);
+Position operator*(const Position &p, const int &i);
+Position operator*(const int &i, const Position &p);
