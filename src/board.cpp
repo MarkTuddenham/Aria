@@ -1,12 +1,14 @@
-#include "piece.h"
-#include "board.h"
+#include "piece.hpp"
+#include "board.hpp"
 
 #include <iostream>
 #include <map>
 
-ChessBoard::ChessBoard()
-{
+ChessBoard::ChessBoard() { init(); }
+ChessBoard::ChessBoard(bool debug) : debug(debug) { init(); }
 
+void ChessBoard::init()
+{
     // Add pieces to board
 
     // White pawns (1,0) -> (1,7)
@@ -86,6 +88,7 @@ const ChessPiece *ChessBoard::getPiece(Position pos) const
 
 void ChessBoard::move(int from, int to)
 {
+    // If in debug mode then can move any piece anywhere.
 
     // TODO raise errors instead of returns if cant move
 
@@ -96,11 +99,11 @@ void ChessBoard::move(int from, int to)
         return;
 
     // check piece is of the correct colour
-    if (p->getColour() != getTurn())
+    if (!debug && p->getColour() != getTurn())
         return;
 
     //TODO check legal move
-    // if (!getLegalMoves()[from].contains(to)) return;
+    // if (!debug && !getLegalMoves(from).contains(to)) return;
 
     {
         //TODO track taken pieces
@@ -118,7 +121,7 @@ void ChessBoard::move(int from, int to)
         // TODO change this to
         //      updateMove(from)
         //      updateMove(to)
-        // to cache only update the position that need it 
+        // to cache only update the position that need it
         // instead of recalculating every piece.
         generateMoves();
     }
@@ -137,6 +140,9 @@ void ChessBoard::generateMoves()
 
 void ChessBoard::generatePieceMoves(int ind)
 {
+    // TODO detect if places in check
+    // TODO check out of bounds.
+
     // get piece from board
     const ChessPiece *p = getPiece(ind);
 
@@ -150,17 +156,19 @@ void ChessBoard::generatePieceMoves(int ind)
     {
     case PAWN:
     {
-        //TODO rotate based on colour
+        //TODO rotate based on colour which only applies to pawns.
 
-        int moveInd = ind + 8;
+        int moveInd;
 
         // Check forward move
+        moveInd = ind + 8;
         const ChessPiece *inFrontPiece = getPiece(moveInd);
-        if (!inFrontPiece)
+        if (!inFrontPiece && !outOfBounds(moveInd))
             pieceMoves->push_back(moveInd);
 
-        moveInd = ind + 7;
         // Check capturing moves
+        // if there exist a piece then the move can't be out of bounds.
+        moveInd = ind + 7;
         const ChessPiece *capLeft = getPiece(moveInd);
         if (capLeft && capLeft->getColour() != p->getColour())
             pieceMoves->push_back(moveInd);
@@ -175,25 +183,57 @@ void ChessBoard::generatePieceMoves(int ind)
         break;
     }
 
-        // case KNIGHT:
-        //     /* code */
-        //     break;
+    case KNIGHT:
+    {
+        int relativeMoves[8] = {6, 15, 17, 10, -6, -15, -17, -10};
 
-        // case BISHOP:
-        //     /* code */
-        //     break;
+        for (int i = 0; i < 8; i++)
+        {
+            int absMovePos = ind + relativeMoves[i];
 
-        // case ROOK:
-        //     /* code */
-        //     break;
+            if (outOfBounds(absMovePos))
+                continue;
 
-        // case QUEEN:
-        //     /* code */
-        //     break;
+            const ChessPiece *toPiece = getPiece(absMovePos);
 
-        // case KING:
-        //     /* code */
-        //     break;
+            // If there is not a piece, or the piece is capturable
+            if (!toPiece || (toPiece && toPiece->getColour() != p->getColour()))
+                pieceMoves->push_back(absMovePos);
+        }
+    }
+    break;
+
+    case BISHOP:
+        /* code */
+        break;
+
+    case ROOK:
+        /* code */
+        break;
+
+    case QUEEN:
+        /* code */
+        break;
+
+    case KING:
+    {
+        int relativeMoves[8] = {7, 8, 9, 1, -7, -8, -9, -1};
+
+        for (int i = 0; i < 8; i++)
+        {
+            int absMovePos = ind + relativeMoves[i];
+
+            if (outOfBounds(absMovePos))
+                continue;
+
+            const ChessPiece *toPiece = getPiece(absMovePos);
+
+            // If there is not a piece, or the piece is capturable
+            if (!toPiece || (toPiece && toPiece->getColour() != p->getColour()))
+                pieceMoves->push_back(absMovePos);
+        }
+    }
+    break;
 
     default:
         // TODO raise error
@@ -284,6 +324,11 @@ Position getPosFromIndex(int ind)
 int getIndexFromPos(Position pos)
 {
     return pos.first + pos.second * 8;
+}
+
+bool outOfBounds(int ind)
+{
+    return ind < 0 || ind > 63;
 }
 
 std::ostream &operator<<(std::ostream &os, Position const &pos)

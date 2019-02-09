@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "piece.h"
+#include "piece.hpp"
 
 ChessPiece::ChessPiece() {}
 ChessPiece::ChessPiece(PieceColour col, PieceType type) : col(col), type(type) {}
@@ -107,6 +107,6 @@ std::ostream &operator<<(std::ostream &os, ChessPiece const &cp)
         break;
     }
 
-    os << "ChessPiece: " << col << " " << type;
+    os << col << " " << type;
     return os;
 }

@@ -3,7 +3,7 @@
 #include <vector>
 #include <map>
 
-#include "piece.h"
+#include "piece.hpp"
 
 typedef std::pair<int, int> Position;
 typedef std::map<int, ChessPiece> BoardMap;
@@ -19,13 +19,15 @@ private:
 
   PieceColour turn = WHITE;
   int numMoves = 0;
+  bool debug = false;
 
 private:
+  void init();
   void generateMoves();
   void generatePieceMoves(int);
 
+  // const functions (or ones with value return)
 public:
-  ChessBoard();
   int getNumMoves() const;
   PieceColour getTurn() const;
 
@@ -36,16 +38,25 @@ public:
   const MoveList *getMoves(ChessPiece *) const;
   const MoveList *getMoves(int) const;
   const MoveList *getMoves(Position) const;
-
-  void move(int, int);
-  void move(Position, Position);
+  // const MoveList *getLegalMoves(ChessPiece *) const;
+  // const MoveList *getLegalMoves(int) const;
+  // const MoveList *getLegalMoves(Position) const;
 
   void print() const;
   void print(std::ostream &) const;
   void prettyPrint() const;
   void prettyPrint(std::ostream &) const;
+
+  // The non const methods:
+  // Shouldn't be many ways to change the board state.
+public:
+  ChessBoard();
+  ChessBoard(bool);
+  void move(int, int);
+  void move(Position, Position);
 };
 
 Position getPosFromIndex(int);
 int getIndexFromPos(Position);
+bool outOfBounds(int);
 std::ostream &operator<<(std::ostream &os, Position const &pos);
