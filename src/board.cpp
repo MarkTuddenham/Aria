@@ -47,6 +47,8 @@ ChessBoard::ChessBoard()
     pieces.insert({4, ChessPiece(WHITE, KING)});
     pieces.insert({60, ChessPiece(BLACK, KING)});
 
+    generateMoves();
+
     std::cout << "Created " << pieces.size() << " pieces." << std::endl;
 }
 
@@ -55,31 +57,51 @@ int ChessBoard::getNumMoves() const
     return numMoves;
 }
 
-const std::map<int, ChessPiece> *ChessBoard::getPieces() const
-{
-    return &pieces;
-}
-
 PieceColour ChessBoard::getTurn() const
 {
     return turn;
 }
 
+const BoardMap *ChessBoard::getPieces() const
+{
+    return &pieces;
+}
+
+const ChessPiece *ChessBoard::getPiece(int ind) const
+{
+    if (pieces.find(ind) == pieces.end())
+    {
+        return nullptr;
+    }
+    else
+    {
+        return &getPieces()->at(ind);
+    }
+}
+
+const ChessPiece *ChessBoard::getPiece(Position pos) const
+{
+    return getPiece(getIndexFromPos(pos));
+}
+
 void ChessBoard::move(int from, int to)
 {
-    bool doTurn = true;
+
+    // TODO raise errors instead of returns if cant move
+
+    const ChessPiece *p = getPiece(from);
 
     // check if there is a piece to move
-    if (pieces.find(from) == pieces.end()) doTurn = false;
+    if (!p)
+        return;
 
     // check piece is of the correct colour
-    if (pieces[from].getColour() != getTurn()) doTurn = false;
+    if (p->getColour() != getTurn())
+        return;
 
     //TODO check legal move
-    // if (!getLegalMoves()[from].contains(to)) doTurn = false;
+    // if (!getLegalMoves()[from].contains(to)) return;
 
-    // Check piece exists
-    if (doTurn)
     {
         //TODO track taken pieces
 
@@ -91,20 +113,126 @@ void ChessBoard::move(int from, int to)
 
         // Swap turns
         turn = PieceColour((turn + 1) % 2);
+        numMoves++;
+
+        // TODO change this to
+        //      updateMove(from)
+        //      updateMove(to)
+        // to cache only update the position that need it 
+        // instead of recalculating every piece.
+        generateMoves();
     }
 }
 
-void ChessBoard::move(std::pair<int, int> from, std::pair<int, int> to)
+void ChessBoard::move(Position from, Position to)
 {
-    move(getIndexFromCoords(from), getIndexFromCoords(to));
+    move(getIndexFromPos(from), getIndexFromPos(to));
+}
+
+void ChessBoard::generateMoves()
+{
+    for (auto itr = getPieces()->begin(); itr != getPieces()->end(); itr++)
+        generatePieceMoves(itr->first);
+}
+
+void ChessBoard::generatePieceMoves(int ind)
+{
+    // get piece from board
+    const ChessPiece *p = getPiece(ind);
+
+    if (!p)
+        return;
+
+    MoveList *pieceMoves = &moves[(ChessPiece *)p];
+    pieceMoves->clear();
+
+    switch (p->getType())
+    {
+    case PAWN:
+    {
+        //TODO rotate based on colour
+
+        int moveInd = ind + 8;
+
+        // Check forward move
+        const ChessPiece *inFrontPiece = getPiece(moveInd);
+        if (!inFrontPiece)
+            pieceMoves->push_back(moveInd);
+
+        moveInd = ind + 7;
+        // Check capturing moves
+        const ChessPiece *capLeft = getPiece(moveInd);
+        if (capLeft && capLeft->getColour() != p->getColour())
+            pieceMoves->push_back(moveInd);
+
+        moveInd = ind + 9;
+        const ChessPiece *capRight = getPiece(moveInd);
+        if (capRight && capRight->getColour() != p->getColour())
+            pieceMoves->push_back(moveInd);
+
+        // TODO en passant
+
+        break;
+    }
+
+        // case KNIGHT:
+        //     /* code */
+        //     break;
+
+        // case BISHOP:
+        //     /* code */
+        //     break;
+
+        // case ROOK:
+        //     /* code */
+        //     break;
+
+        // case QUEEN:
+        //     /* code */
+        //     break;
+
+        // case KING:
+        //     /* code */
+        //     break;
+
+    default:
+        // TODO raise error
+        break;
+    }
+}
+
+const MoveList *ChessBoard::getMoves(ChessPiece *p) const
+{
+    // TODO throw error
+    if (!p)
+        return nullptr;
+
+    if (moves.find(p) == moves.end())
+    {
+        return nullptr;
+    }
+    else
+    {
+        return &moves.at(p);
+    }
+}
+
+const MoveList *ChessBoard::getMoves(int ind) const
+{
+    return getMoves((ChessPiece *)getPiece(ind));
+}
+
+const MoveList *ChessBoard::getMoves(Position pos) const
+{
+    return getMoves(getIndexFromPos(pos));
 }
 
 void ChessBoard::print(std::ostream &os) const
 {
     for (auto itr = pieces.begin(); itr != pieces.end(); ++itr)
     {
-        std::pair<int, int> index = getCoordsFromIndex(itr->first);
-        os << '\t' << "(" << index.first << ", " << index.second << ")"
+        Position pos = getPosFromIndex(itr->first);
+        os << '\t' << "(" << pos.first << ", " << pos.second << ")"
            << '\t' << itr->second << std::endl;
     }
 }
@@ -126,7 +254,7 @@ void ChessBoard::prettyPrint(std::ostream &os) const
 
             try
             {
-                sym = pieces.at(getIndexFromCoords({x, y})).getSymbol();
+                sym = pieces.at(getIndexFromPos({x, y})).getSymbol();
             }
             catch (const std::out_of_range &e)
             {
@@ -141,18 +269,25 @@ void ChessBoard::prettyPrint(std::ostream &os) const
            << "  ---------------------------------" << std::endl;
     }
 
-    os << "    0   1   2   3   4   5   6   7  " << std::endl << std::endl;
+    os << "    0   1   2   3   4   5   6   7  " << std::endl
+       << std::endl;
 }
 
 void ChessBoard::prettyPrint() const { prettyPrint(std::cout); }
 
 // Helper functions.
-std::pair<int, int> getCoordsFromIndex(int index)
+Position getPosFromIndex(int ind)
 {
-    return {index % 8, index / 8};
+    return {ind % 8, ind / 8};
 }
 
-int getIndexFromCoords(std::pair<int, int> coords)
+int getIndexFromPos(Position pos)
 {
-    return coords.first + coords.second * 8;
+    return pos.first + pos.second * 8;
+}
+
+std::ostream &operator<<(std::ostream &os, Position const &pos)
+{
+    os << "(" << pos.first << "," << pos.second << ")";
+    return os;
 }

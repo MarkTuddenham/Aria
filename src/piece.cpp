@@ -58,9 +58,6 @@ char ChessPiece::getSymbol() const
 
 }
 
-
-
-
 std::ostream &operator<<(std::ostream &os, ChessPiece const &cp)
 {
     std::string col, type;
