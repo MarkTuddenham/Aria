@@ -67,9 +67,14 @@ int ChessBoard::get_num_moves() const
     return numMoves;
 }
 
-PieceColour ChessBoard::get_turn() const
+const PieceColour ChessBoard::get_turn() const
 {
     return m_turn;
+}
+
+const std::string ChessBoard::get_turn_name() const
+{
+    return piece_colour_string.at(m_turn);
 }
 
 const std::unique_ptr<BoardMap> ChessBoard::get_pieces() const
@@ -80,13 +85,9 @@ const std::unique_ptr<BoardMap> ChessBoard::get_pieces() const
 const std::shared_ptr<ChessPiece> ChessBoard::get_piece(int t_ind) const
 {
     if (m_board.find(t_ind) == m_board.end())
-    {
         return nullptr;
-    }
     else
-    {
         return m_board.at(t_ind);
-    }
 }
 
 const std::shared_ptr<ChessPiece> ChessBoard::get_piece(Position t_pos) const
@@ -103,7 +104,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 {
     // If in debug mode then can move any piece anywhere.
 
-    // TODO raise errors instead of returns if cant move
+    // TODO raise errors instead of return if can't move
 
     const std::shared_ptr<ChessPiece> p = get_piece(t_from_ind);
 
@@ -129,22 +130,18 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     //     return;
     // }
 
-    {
-        //TODO record moves & track taken board
+    // Add piece in its new place
+    m_board[t_to_ind] = m_board[t_from_ind];
 
-        // Add piece in its new place
-        m_board[t_to_ind] = m_board[t_from_ind];
+    // remove piece from old position
+    m_board.erase(t_from_ind);
 
-        // remove piece from old position
-        m_board.erase(t_from_ind);
+    // Swap turns
+    swap_turn();
+    numMoves++;
 
-        // Swap turns
-        swap_turn();
-        numMoves++;
-
-        // Regenerate possible moves
-        generate_moves();
-    }
+    // Regenerate possible moves
+    generate_moves();
 }
 
 void ChessBoard::move(Position t_from_pos, Position t_to_pos)
@@ -217,7 +214,6 @@ void ChessBoard::generate_piece_moves(int t_ind)
         int rotation = (cp->get_colour() == WHITE) ? 1 : -1;
 
         // Check forward move
-
         const Position rel_move_pos = {0, 1};
         const Position abs_move_pos = current_pos + rel_move_pos * rotation;
 
@@ -239,10 +235,6 @@ void ChessBoard::generate_piece_moves(int t_ind)
             if (possible_capture && possible_capture->get_colour() != cp->get_colour())
                 piece_moves->push_back(get_index_from_pos(abs_move_pos));
         }
-
-        //TODO en passant
-
-        //TODO move twice on first turn
 
         break;
     }
@@ -293,8 +285,6 @@ void ChessBoard::generate_piece_moves(int t_ind)
 
     case KING:
     {
-        // TODO castling
-
         add_moves_from_relative({{1, 1},
                                  {1, -1},
                                  {-1, 1},
@@ -309,7 +299,7 @@ void ChessBoard::generate_piece_moves(int t_ind)
 
     default:
         // TODO raise error
-        std::cerr << "Unknown Piece!!" << std::endl;
+        std::cerr << "Unknown Piece." << std::endl;
         break;
     }
 } // namespace DarkChess
@@ -354,7 +344,6 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std
 
 const std::shared_ptr<MoveList> ChessBoard::get_moves(std::shared_ptr<ChessPiece> t_cp) const
 {
-    // TODO throw error?
     if (!t_cp || m_moves.find(t_cp) == m_moves.end())
         return nullptr;
     else
@@ -375,8 +364,6 @@ const std::shared_ptr<MoveList> ChessBoard::get_legal_moves(std::shared_ptr<Ches
 {
     // TODO detect if places in check
     const std::shared_ptr<MoveList> all_moves = get_moves(t_cp);
-
-    // TODO only recalculate the necessary board
 
     return all_moves;
 }

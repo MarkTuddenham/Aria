@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 
 #include "dark_chess/piece.hpp"
 #include "dark_chess/utils.hpp"
@@ -29,7 +30,8 @@ private:
   // const functions (or ones with value return)
 public:
   int get_num_moves() const;
-  PieceColour get_turn() const;
+  const PieceColour get_turn() const;
+  const std::string get_turn_name() const;
 
   const std::unique_ptr<BoardMap> get_pieces() const;
   const std::shared_ptr<ChessPiece> get_piece(int) const;

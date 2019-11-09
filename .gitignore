@@ -3,6 +3,11 @@ build/
 tmp/
 .vscode/
 
+ex/*
+!ex/*.cpp
+!ex/*.hpp
+!ex/CMakeLists.txt
+
 
 # CMake
 CMakeFiles/

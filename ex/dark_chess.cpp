@@ -5,7 +5,6 @@
 #include "dark_chess/utils.hpp"
 
 void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_pos);
-using DarkChess::operator<<;
 
 int main()
 {
@@ -17,13 +16,13 @@ int main()
 
     print_moves(cb, {2, 1});
 
-    std::cout << cb.get_turn() << '\n';
-    cb.move(3, 28); // TODO no legal move checking yet
-    std::cout << cb.get_turn() << std::endl;
+    std::cout << cb.get_turn_name() << "'s turn \n";
+    cb.move(3, 28);
+    std::cout << cb.get_turn_name() << "'s turn \n";
     cb.move(91, 20); // Should fail
-    std::cout << cb.get_turn() << std::endl;
+    std::cout << cb.get_turn_name() << "'s turn \n";
     cb.move({2, 6}, {2, 5});
-    std::cout << cb.get_turn() << std::endl;
+    std::cout << cb.get_turn_name() << "'s turn \n";
 
     cb.pretty_print();
 
@@ -61,6 +60,8 @@ int main()
 
 void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_pos)
 {
+    using DarkChess::operator<<;
+
     const std::shared_ptr<DarkChess::ChessPiece> cp = t_cb.get_piece(t_pos);
     const std::shared_ptr<DarkChess::MoveList> p_moves = t_cb.get_moves(t_pos);
 
