@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <memory>
 
-#include "dark_chess/board.hpp"
-#include "dark_chess/piece.hpp"
-#include "dark_chess/utils.hpp"
+#include "DarkChess/board.hpp"
+#include "DarkChess/piece.hpp"
+#include "DarkChess/utils.hpp"
 
 namespace DarkChess
 {
@@ -21,9 +21,6 @@ ChessBoard::ChessBoard(bool t_debug) : debug(t_debug)
         m_board.insert({i, cp_ptr});
         m_moves.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
     };
-
-    // Add pieces to board
-    int pieceIndex = 0;
 
     // White pawns (1,0) -> (1,7)
     for (int i = 8; i < 16; ++i)
@@ -67,7 +64,7 @@ int ChessBoard::get_num_moves() const
     return numMoves;
 }
 
-const PieceColour ChessBoard::get_turn() const
+PieceColour ChessBoard::get_turn() const
 {
     return m_turn;
 }
@@ -214,13 +211,15 @@ void ChessBoard::generate_piece_moves(int t_ind)
         int rotation = (cp->get_colour() == WHITE) ? 1 : -1;
 
         // Check forward move
-        const Position rel_move_pos = {0, 1};
-        const Position abs_move_pos = current_pos + rel_move_pos * rotation;
+        {
+            const Position rel_move_pos = {0, 1};
+            const Position abs_move_pos = current_pos + rel_move_pos * rotation;
 
-        const std::shared_ptr<ChessPiece> in_front_piece = get_piece(abs_move_pos);
+            const std::shared_ptr<ChessPiece> in_front_piece = get_piece(abs_move_pos);
 
-        if (!in_front_piece && !out_of_bounds(abs_move_pos))
-            piece_moves->push_back(get_index_from_pos(abs_move_pos));
+            if (!in_front_piece && !out_of_bounds(abs_move_pos))
+                piece_moves->push_back(get_index_from_pos(abs_move_pos));
+        }
 
         // Check capturing moves
         for (Position rel_move_pos : std::vector<Position>{{-1, 1}, {1, 1}})

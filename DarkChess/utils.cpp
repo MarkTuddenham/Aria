@@ -3,8 +3,8 @@
 #include <memory>
 #include <iostream>
 
-#include "dark_chess/utils.hpp"
-#include "dark_chess/piece.hpp"
+#include "DarkChess/utils.hpp"
+#include "DarkChess/piece.hpp"
 
 namespace DarkChess
 {

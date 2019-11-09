@@ -3,6 +3,7 @@ tmp/
 bin/
 _build/
 
+.vs/
 .vscode/
 
 # CMake

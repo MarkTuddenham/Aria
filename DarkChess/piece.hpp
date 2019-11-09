@@ -57,10 +57,10 @@ public:
   ChessPiece(PieceColour, PieceType);
 
   const std::string get_name() const;
-  const PieceType get_type() const;
-  const PieceColour get_colour() const;
+  PieceType get_type() const;
+  PieceColour get_colour() const;
 
-  const char get_symbol() const;
+  char get_symbol() const;
 
   friend std::ostream &operator<<(std::ostream &os, ChessPiece const &cp);
 };

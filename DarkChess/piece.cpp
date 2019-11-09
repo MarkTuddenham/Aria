@@ -1,19 +1,19 @@
 #include <ostream>
 #include <string>
 
-#include "dark_chess/piece.hpp"
+#include "DarkChess/piece.hpp"
 
 namespace DarkChess
 {
 
 ChessPiece::ChessPiece(PieceColour t_col, PieceType t_type) : col(t_col), type(t_type) {}
 
-const PieceType ChessPiece::get_type() const
+PieceType ChessPiece::get_type() const
 {
     return type;
 }
 
-const PieceColour ChessPiece::get_colour() const
+PieceColour ChessPiece::get_colour() const
 {
     return col;
 }
@@ -23,7 +23,7 @@ const std::string ChessPiece::get_name() const
     return piece_colour_string.at(get_colour()) + " " + piece_type_string.at(get_type());
 }
 
-const char ChessPiece::get_symbol() const
+char ChessPiece::get_symbol() const
 {
     char sym = piece_symbol_string.at(get_type());
 

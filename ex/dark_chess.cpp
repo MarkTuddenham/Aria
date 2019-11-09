@@ -1,8 +1,5 @@
 #include <iostream>
-
-#include "dark_chess/config.hpp"
-#include "dark_chess/board.hpp"
-#include "dark_chess/utils.hpp"
+#include <DarkChess.hpp>
 
 void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_pos);
 
