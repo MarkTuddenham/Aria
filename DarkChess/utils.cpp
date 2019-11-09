@@ -1,7 +1,6 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include <iostream>
 
 #include "DarkChess/utils.hpp"
 #include "DarkChess/piece.hpp"
@@ -32,7 +31,7 @@ bool out_of_bounds(Position t_pos)
 
 std::ostream &operator<<(std::ostream &os, Position const &pos)
 {
-    os << "(" << pos.first << "," << pos.second << ")";
+    os << to_string(pos);
     return os;
 }
 
@@ -52,3 +51,13 @@ Position operator*(const int &i, const Position &p)
 }
 
 } // namespace DarkChess
+
+namespace std
+{
+
+std::string to_string(const DarkChess::Position &pos)
+{
+    return "(" + std::to_string(pos.first) + "," + std::to_string(pos.second) + ")";
+}
+
+} // namespace std

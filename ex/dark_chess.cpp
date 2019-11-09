@@ -1,40 +1,37 @@
-#include <iostream>
 #include <DarkChess.hpp>
 
 void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_pos);
 
 int main()
 {
-    std::cout << "Dark Chess Version " << DarkChess_VERSION_MAJOR << '.' << DarkChess_VERSION_MINOR << "\n";
+    DarkChess::Log::init();
+
+    DC_INFO("Dark Chess Version {:d}.{:d}", DarkChess_VERSION_MAJOR, DarkChess_VERSION_MINOR);
 
     DarkChess::ChessBoard cb;
 
-    cb.pretty_print();
+    DC_INFO(cb.to_string());
 
     print_moves(cb, {2, 1});
 
-    std::cout << cb.get_turn_name() << "'s turn \n";
     cb.move(3, 28);
-    std::cout << cb.get_turn_name() << "'s turn \n";
     cb.move(91, 20); // Should fail
-    std::cout << cb.get_turn_name() << "'s turn \n";
     cb.move({2, 6}, {2, 5});
-    std::cout << cb.get_turn_name() << "'s turn \n";
 
-    cb.pretty_print();
+    DC_INFO(cb.to_string());
 
-    std::cout << "Number of moves: " << cb.get_num_moves() << std::endl;
+    DC_INFO("Number of moves: {}", cb.get_num_moves());
 
     print_moves(cb, {4, 3});
 
     cb.move({6, 0}, {5, 2});
     cb.move({5, 7}, {3, 2}); // Teleporting yay!
     cb.move({4, 1}, {4, 2});
-    cb.pretty_print();
+    DC_INFO(cb.to_string());
 
     // Pawns
     print_moves(cb, {4, 3});
-    print_moves(cb, {5, 6});
+    print_moves(cb, {5, 6}); 
 
     // Knight
     print_moves(cb, {1, 0});
@@ -61,11 +58,13 @@ void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_
 
     const std::shared_ptr<DarkChess::ChessPiece> cp = t_cb.get_piece(t_pos);
     const std::shared_ptr<DarkChess::MoveList> p_moves = t_cb.get_moves(t_pos);
+    std::string str;
 
-    std::cout << p_moves->size() << " possible moves for " << *cp << " at " << t_pos << ": ";
+    str += std::to_string(p_moves->size()) + " possible moves for " + cp->get_name() + " at " + std::to_string(t_pos) + ": ";
     for (int i : *p_moves)
     {
-        std::cout << DarkChess::get_pos_from_index(i) << ' ';
+        str += std::to_string(DarkChess::get_pos_from_index(i)) + ' ';
     }
-    std::cout << std::endl;
+
+    DC_INFO(str);
 }

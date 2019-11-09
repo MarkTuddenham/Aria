@@ -1,17 +1,37 @@
 cmake_minimum_required(VERSION 3.10)
 
-# specify the C++ standard
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-set(CMAKE_CXX_FLAGS "-O3 -pthread -Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor")
-
 configure_file(config.hpp.in config.hpp)
 
 add_library(DarkChess 
-                board.cpp
-                piece.cpp
-                utils.cpp
-                )
+            board.cpp
+            piece.cpp
+            utils.cpp
+            log.cpp
+            )
 
-target_include_directories(DarkChess PUBLIC "${PROJECT_BINARY_DIR}/" "${PROJECT_SOURCE_DIR}/")
+target_compile_options(DarkChess
+PRIVATE
+    "-O3" 
+    "-pthread"
+    "-Wextra"
+    "-Wpedantic"
+    "-Wshadow"
+    "-Wnon-virtual-dtor"
+)
+
+target_include_directories(DarkChess 
+PRIVATE 
+"${PROJECT_SOURCE_DIR}/DarkChess/vendor/"
+PUBLIC
+"${PROJECT_SOURCE_DIR}/" 
+"${PROJECT_BINARY_DIR}/"
+INTERFACE
+"${PROJECT_SOURCE_DIR}/DarkChess"
+)
+
+add_subdirectory(vendor/spdlog)
+
+target_link_libraries(DarkChess
+PUBLIC
+    spdlog::spdlog
+)

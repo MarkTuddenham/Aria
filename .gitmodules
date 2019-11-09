@@ -1,0 +1,3 @@
+[submodule "DarkChess/vendor/spdlog"]
+	path = DarkChess/vendor/spdlog
+	url = https://github.com/gabime/spdlog.git

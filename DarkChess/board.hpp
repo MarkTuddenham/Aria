@@ -44,10 +44,7 @@ public:
   const std::shared_ptr<MoveList> get_legal_moves(int) const;
   const std::shared_ptr<MoveList> get_legal_moves(Position) const;
 
-  void print() const;
-  void print(std::ostream &) const;
-  void pretty_print() const;
-  void pretty_print(std::ostream &) const;
+  std::string to_string() const;
 
   ChessBoard();
   ChessBoard(bool);

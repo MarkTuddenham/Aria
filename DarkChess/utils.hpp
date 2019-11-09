@@ -25,3 +25,8 @@ Position operator*(const Position &, const int &);
 Position operator*(const int &, const Position &);
 
 } // namespace DarkChess
+
+namespace std
+{
+std::string to_string(const DarkChess::Position &pos);
+}

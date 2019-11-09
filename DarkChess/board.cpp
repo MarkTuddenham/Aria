@@ -1,4 +1,3 @@
-#include <iostream>
 #include <map>
 #include <vector>
 #include <algorithm>
@@ -7,6 +6,7 @@
 #include "DarkChess/board.hpp"
 #include "DarkChess/piece.hpp"
 #include "DarkChess/utils.hpp"
+#include "DarkChess/log.hpp"
 
 namespace DarkChess
 {
@@ -95,6 +95,7 @@ const std::shared_ptr<ChessPiece> ChessBoard::get_piece(Position t_pos) const
 void ChessBoard::swap_turn()
 {
     m_turn = PieceColour((m_turn + 1) % 2);
+    DC_CORE_TRACE("{}'s turn.", get_turn_name());
 }
 
 void ChessBoard::move(int t_from_ind, int t_to_ind)
@@ -108,7 +109,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     // check if there is a piece to move
     if (!p)
     {
-        std::cerr << "Invalid move! No Piece." << std::endl;
+        DC_CORE_ERROR("Invalid move! No Piece.");
         return;
     }
 
@@ -116,7 +117,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     // If we're debugging then allow out of turn moves
     if (!debug && p->get_colour() != m_turn)
     {
-        std::cerr << "Invalid move! Not your turn." << std::endl;
+        DC_CORE_ERROR("Invalid move! Not your turn.");
         return;
     }
 
@@ -176,7 +177,7 @@ void ChessBoard::generate_piece_moves(int t_ind)
 
     if (!cp)
     {
-        std::cerr << "Unknown Piece!" << std::endl;
+        DC_CORE_ERROR("Unknown Piece!");
         return;
     }
 
@@ -298,7 +299,7 @@ void ChessBoard::generate_piece_moves(int t_ind)
 
     default:
         // TODO raise error
-        std::cerr << "Unknown Piece." << std::endl;
+        DC_CORE_ERROR("Unknown Piece.");
         break;
     }
 } // namespace DarkChess
@@ -377,52 +378,36 @@ const std::shared_ptr<MoveList> ChessBoard::get_legal_moves(Position t_pos) cons
     return get_legal_moves(get_index_from_pos(t_pos));
 }
 
-void ChessBoard::print(std::ostream &os) const
+std::string ChessBoard::to_string() const
 {
-    for (auto itr = m_board.begin(); itr != m_board.end(); ++itr)
-    {
-        Position pos = get_pos_from_index(itr->first);
-        os << '\t' << "(" << pos.first << ", " << pos.second << ")"
-           << '\t' << itr->second << std::endl;
-    }
-}
 
-void ChessBoard::print() const { print(std::cout); }
+    std::string str;
 
-void ChessBoard::pretty_print(std::ostream &os) const
-{
-    char sym;
-
-    os << std::endl
-       << "  ---------------------------------" << std::endl;
+    str += "\n  ---------------------------------\n";
 
     for (int y = 7; y >= 0; y--)
     {
-        os << y << " ";
+        str += std::to_string(y) + " ";
         for (int x = 0; x < 8; x++)
         {
+            char sym;
+            std::shared_ptr<ChessPiece> cp = get_piece({x, y});
 
-            try
-            {
-                sym = m_board.at(get_index_from_pos({x, y}))->get_symbol();
-            }
-            catch (const std::out_of_range &e)
-            {
+            if (cp)
+                sym = cp->get_symbol();
+            else
                 sym = ' ';
-            }
 
-            os << "| "
-               << sym
-               << " ";
+            str += "| ";
+            str.push_back(sym);
+            str += " ";
         }
-        os << "|" << std::endl
-           << "  ---------------------------------" << std::endl;
+        str += "|\n  ---------------------------------\n";
     }
 
-    os << "    0   1   2   3   4   5   6   7  " << std::endl
-       << std::endl;
-}
+    str += "    0   1   2   3   4   5   6   7  \n";
 
-void ChessBoard::pretty_print() const { pretty_print(std::cout); }
+    return str;
+}
 
 } // namespace DarkChess
