@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(CMAKE_CXX_FLAGS "-O3 -pthread -Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor")
+
 configure_file(config.hpp.in config.hpp)
 
 add_library(DarkChess 
@@ -12,4 +14,4 @@ add_library(DarkChess
                 utils.cpp
                 )
 
-target_include_directories(DarkChess PUBLIC "${PROJECT_BINARY_DIR}/" )
+target_include_directories(DarkChess PUBLIC "${PROJECT_BINARY_DIR}/" "${PROJECT_SOURCE_DIR}/")

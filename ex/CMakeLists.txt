@@ -9,6 +9,4 @@ add_executable(DarkChessExample dark_chess.cpp)
 
 target_link_libraries(DarkChessExample PUBLIC DarkChess)
 
-target_include_directories(DarkChessExample PUBLIC 
-                            "${PROJECT_BINARY_DIR}"
-                            )
+target_include_directories(DarkChessExample PUBLIC "${PROJECT_BINARY_DIR}" )
