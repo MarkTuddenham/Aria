@@ -1,7 +1,7 @@
 #include <ostream>
 #include <string>
 
-#include "DarkChess/piece.hpp"
+#include "DarkChess/core/piece.hpp"
 
 namespace DarkChess
 {

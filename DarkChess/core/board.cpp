@@ -3,10 +3,10 @@
 #include <algorithm>
 #include <memory>
 
-#include "DarkChess/board.hpp"
-#include "DarkChess/piece.hpp"
-#include "DarkChess/utils.hpp"
-#include "DarkChess/log.hpp"
+#include "DarkChess/core/board.hpp"
+#include "DarkChess/core/piece.hpp"
+#include "DarkChess/core/utils.hpp"
+#include "DarkChess/core/log.hpp"
 
 namespace DarkChess
 {
@@ -102,14 +102,14 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 {
     // If in debug mode then can move any piece anywhere.
 
-    // TODO raise errors instead of return if can't move
+    // TODO? raise errors instead of return if can't move
 
     const std::shared_ptr<ChessPiece> p = get_piece(t_from_ind);
 
     // check if there is a piece to move
     if (!p)
     {
-        DC_CORE_ERROR("Invalid move! No Piece.");
+        DC_CORE_WARN("Invalid move! No Piece.");
         return;
     }
 
@@ -117,7 +117,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     // If we're debugging then allow out of turn moves
     if (!debug && p->get_colour() != m_turn)
     {
-        DC_CORE_ERROR("Invalid move! Not your turn.");
+        DC_CORE_WARN("Invalid move! Not your turn.");
         return;
     }
 
@@ -137,6 +137,11 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     // Swap turns
     swap_turn();
     numMoves++;
+
+    DC_CORE_INFO("Move: {} from {} to {}",
+                 p->get_name(),
+                 std::to_string(get_pos_from_index(t_to_ind)),
+                 std::to_string(get_pos_from_index(t_from_ind)));
 
     // Regenerate possible moves
     generate_moves();

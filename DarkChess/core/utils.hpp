@@ -4,7 +4,7 @@
 #include <map>
 #include <memory>
 
-#include "DarkChess/piece.hpp"
+#include "DarkChess/core/piece.hpp"
 
 namespace DarkChess
 {

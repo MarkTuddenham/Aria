@@ -4,7 +4,7 @@ void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_
 
 int main()
 {
-    DarkChess::Log::init();
+    DarkChess::Log::init(); // MUST, need to move to an entry point / Engine INIT
 
     DC_INFO("Dark Chess Version {:d}.{:d}", DarkChess_VERSION_MAJOR, DarkChess_VERSION_MINOR);
 
@@ -31,7 +31,7 @@ int main()
 
     // Pawns
     print_moves(cb, {4, 3});
-    print_moves(cb, {5, 6}); 
+    print_moves(cb, {5, 6});
 
     // Knight
     print_moves(cb, {1, 0});

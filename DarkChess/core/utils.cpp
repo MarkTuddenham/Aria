@@ -2,8 +2,8 @@
 #include <map>
 #include <memory>
 
-#include "DarkChess/utils.hpp"
-#include "DarkChess/piece.hpp"
+#include "DarkChess/core/utils.hpp"
+#include "DarkChess/core/piece.hpp"
 
 namespace DarkChess
 {

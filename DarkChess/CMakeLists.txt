@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.10)
 configure_file(config.hpp.in config.hpp)
 
 add_library(DarkChess 
-            board.cpp
-            piece.cpp
-            utils.cpp
-            log.cpp
+            core/board.cpp
+            core/piece.cpp
+            core/utils.cpp
+            core/log.cpp
             )
 
 target_compile_options(DarkChess
@@ -29,9 +29,9 @@ INTERFACE
 "${PROJECT_SOURCE_DIR}/DarkChess"
 )
 
-add_subdirectory(vendor/spdlog)
+add_subdirectory(vendor/spdlog/)
 
 target_link_libraries(DarkChess
 PUBLIC
-    spdlog::spdlog
+    spdlog
 )
