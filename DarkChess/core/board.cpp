@@ -13,7 +13,7 @@ namespace DarkChess
 
 ChessBoard::ChessBoard() : ChessBoard(false) {}
 
-ChessBoard::ChessBoard(bool t_debug) : debug(t_debug)
+ChessBoard::ChessBoard(bool t_debug) : m_debug(t_debug)
 {
 
     auto make_piece = [&](ChessPiece cp, int i) {
@@ -61,7 +61,7 @@ ChessBoard::ChessBoard(bool t_debug) : debug(t_debug)
 
 int ChessBoard::get_num_moves() const
 {
-    return numMoves;
+    return m_num_moves;
 }
 
 PieceColour ChessBoard::get_turn() const
@@ -116,7 +116,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 
     // check piece is of the correct colour
     // If we're debugging then allow out of turn moves
-    if (!debug && p->get_colour() != m_turn)
+    if (!m_debug && p->get_colour() != m_turn)
     {
         DC_CORE_WARN("Invalid move {} to {}: Not your turn.",
                      std::to_string(get_pos_from_index(t_to_ind)),
@@ -147,7 +147,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 
     // Swap turns
     swap_turn();
-    numMoves++;
+    ++m_num_moves;
 
     DC_CORE_INFO("Move: {} from {} to {}",
                  p->get_name(),

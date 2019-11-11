@@ -23,6 +23,26 @@ enum PieceColour
   BLACK
 };
 
+class ChessPiece
+{
+
+public:
+  ChessPiece() = delete;
+  ChessPiece(PieceColour, PieceType);
+
+  const std::string get_name() const;
+  PieceType get_type() const;
+  PieceColour get_colour() const;
+
+  char get_symbol() const;
+
+  friend std::ostream &operator<<(std::ostream &os, ChessPiece const &cp);
+
+private:
+  PieceColour col;
+  PieceType type;
+};
+
 const std::map<const PieceType, const std::string> piece_type_string({
     {PAWN, "Pawn"},
     {KNIGHT, "Knight"},
@@ -45,24 +65,5 @@ const std::map<const PieceColour, const std::string> piece_colour_string({
     {WHITE, "White"},
     {BLACK, "Black"},
 });
-
-class ChessPiece
-{
-private:
-  PieceColour col;
-  PieceType type;
-
-public:
-  ChessPiece() = delete;
-  ChessPiece(PieceColour, PieceType);
-
-  const std::string get_name() const;
-  PieceType get_type() const;
-  PieceColour get_colour() const;
-
-  char get_symbol() const;
-
-  friend std::ostream &operator<<(std::ostream &os, ChessPiece const &cp);
-};
 
 } // namespace DarkChess

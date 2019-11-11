@@ -34,12 +34,11 @@ public:
   void move(Position, Position);
 
 private:
-  // std::vector<ChessPiece> m_pieces;
   BoardMap m_board;
   Moves m_moves;
   PieceColour m_turn = WHITE;
-  int numMoves = 0;
-  bool debug = false;
+  int m_num_moves = 0;
+  bool m_debug = false;
 
   void swap_turn();
   void generate_moves();
