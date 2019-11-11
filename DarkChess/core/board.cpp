@@ -95,7 +95,6 @@ const std::shared_ptr<ChessPiece> ChessBoard::get_piece(Position t_pos) const
 void ChessBoard::swap_turn()
 {
     m_turn = PieceColour((m_turn + 1) % 2);
-    DC_CORE_TRACE("{}'s turn.", get_turn_name());
 }
 
 void ChessBoard::move(int t_from_ind, int t_to_ind)
@@ -109,7 +108,9 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     // check if there is a piece to move
     if (!p)
     {
-        DC_CORE_WARN("Invalid move! No Piece.");
+        DC_CORE_WARN("Invalid move {} to {}: No Piece.",
+                     std::to_string(get_pos_from_index(t_to_ind)),
+                     std::to_string(get_pos_from_index(t_from_ind)));
         return;
     }
 
@@ -117,14 +118,24 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     // If we're debugging then allow out of turn moves
     if (!debug && p->get_colour() != m_turn)
     {
-        DC_CORE_WARN("Invalid move! Not your turn.");
+        DC_CORE_WARN("Invalid move {} to {}: Not your turn.",
+                     std::to_string(get_pos_from_index(t_to_ind)),
+                     std::to_string(get_pos_from_index(t_from_ind)));
         return;
     }
 
-    //TODO check legal move
-    // if (!debug && !get_legal_moves(from).contains(to))
+    // //TODO enable when legal moves work
+    // std::shared_ptr<MoveList> legal_moves = get_moves(p);
+    // if (!legal_moves)
+    //     DC_CORE_CRITICAL("Piece ({} at {}) has no moves container!",
+    //                      p->get_name(),
+    //                      std::to_string(t_from_ind));
+
+    // if (!debug && legal_moves && std::find(begin(*legal_moves), end(*legal_moves), t_to_ind) == end(*legal_moves))
     // {
-    //     std::cerr << "Invalid move! Not a legal move." << std::endl;
+    //     DC_CORE_WARN("Invalid move {} to {}: Not a legal move.",
+    //                  std::to_string(get_pos_from_index(t_to_ind)),
+    //                  std::to_string(get_pos_from_index(t_from_ind)));
     //     return;
     // }
 
@@ -261,7 +272,7 @@ void ChessBoard::generate_piece_moves(int t_ind)
     {
         ad_infinitum(t_ind,
                      {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}},
-                     piece_moves);
+                     piece_moves, false);
         break;
     }
 
@@ -269,7 +280,7 @@ void ChessBoard::generate_piece_moves(int t_ind)
     {
         ad_infinitum(t_ind,
                      {{0, 1}, {1, 0}, {0, -1}, {-1, 0}},
-                     piece_moves);
+                     piece_moves, false);
         break;
     }
 
@@ -284,7 +295,7 @@ void ChessBoard::generate_piece_moves(int t_ind)
                       {1, 0},
                       {0, -1},
                       {-1, 0}},
-                     piece_moves);
+                     piece_moves, false);
         break;
     }
 
@@ -309,13 +320,19 @@ void ChessBoard::generate_piece_moves(int t_ind)
     }
 } // namespace DarkChess
 
-void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std::shared_ptr<MoveList> t_movelist)
+void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std::shared_ptr<MoveList> t_movelist, bool inc_targets)
 {
+
+    bool looking_for_king = false;
+
     const Position pos = get_pos_from_index(t_ind);
     const std::shared_ptr<ChessPiece> cp = get_piece(t_ind);
 
     for (Position dir : t_directions)
     {
+
+        std::shared_ptr<ChessPiece> potentially_pinned;
+
         // There can only be a max of 7 iterations before going out of bounds
         // start at 1 since 0 will be the current position.
         for (int i = 1; i < 8; ++i)
@@ -327,21 +344,51 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std
 
             const std::shared_ptr<ChessPiece> to_piece = get_piece(to_pos);
 
-            if (!to_piece)
+            bool is_enemy_piece = to_piece && to_piece->get_colour() != cp->get_colour();
+
+            if (looking_for_king)
             {
-                // Found no piece: Keep looking in this direction.
-                t_movelist->push_back(get_index_from_pos(to_pos));
-                continue;
-            }
-            else if (to_piece->get_colour() != cp->get_colour())
-            {
-                // Found enemy piece: Stop looking in this direction.
-                t_movelist->push_back(get_index_from_pos(to_pos));
-                break;
+                // Found enemy king with no blockers -> piece is pinned.
+                if (is_enemy_piece && to_piece && to_piece->get_type() == KING)
+                {
+                    // TODO
+                    // if moves have already been generated for this piece
+                    // then remove the ones that don't lie on the attacking line.
+
+                    // if no moves generated then mark as pinned, with pinned direction.
+                }
+                else if (to_piece)
+                {
+                    // found a blocker (either colour) -> piece is not pinned.
+                    break;
+                }
+                // no piece found yet, keep looking.
             }
             else
             {
-                break;
+
+                if (!to_piece)
+                {
+                    // Found no piece: Keep looking in this direction.
+                    t_movelist->push_back(get_index_from_pos(to_pos));
+                    continue;
+                }
+                else if (is_enemy_piece)
+                {
+                    // Found enemy piece: Stop looking for moves & now look to see if piece is pinned.
+                    t_movelist->push_back(get_index_from_pos(to_pos));
+                    looking_for_king = true;
+                    potentially_pinned = to_piece;
+                    break;
+                }
+                else
+                {
+                    // Found our own piece
+                    if (inc_targets)
+                        t_movelist->push_back(get_index_from_pos(to_pos));
+
+                    break;
+                }
             }
         }
     }
@@ -363,24 +410,6 @@ const std::shared_ptr<MoveList> ChessBoard::get_moves(int t_ind) const
 const std::shared_ptr<MoveList> ChessBoard::get_moves(Position t_pos) const
 {
     return get_moves(get_index_from_pos(t_pos));
-}
-
-const std::shared_ptr<MoveList> ChessBoard::get_legal_moves(std::shared_ptr<ChessPiece> t_cp) const
-{
-    // TODO detect if places in check
-    const std::shared_ptr<MoveList> all_moves = get_moves(t_cp);
-
-    return all_moves;
-}
-
-const std::shared_ptr<MoveList> ChessBoard::get_legal_moves(int t_ind) const
-{
-    return get_legal_moves(get_piece(t_ind));
-}
-
-const std::shared_ptr<MoveList> ChessBoard::get_legal_moves(Position t_pos) const
-{
-    return get_legal_moves(get_index_from_pos(t_pos));
 }
 
 std::string ChessBoard::to_string() const

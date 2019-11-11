@@ -13,21 +13,6 @@ namespace DarkChess
 class ChessBoard
 {
 
-private:
-  // std::vector<ChessPiece> m_pieces;
-  BoardMap m_board;
-  Moves m_moves;
-  PieceColour m_turn = WHITE;
-  int numMoves = 0;
-  bool debug = false;
-
-  void swap_turn();
-  void generate_moves();
-  void generate_piece_moves(int);
-  void generate_piece_moves(const std::shared_ptr<ChessPiece>);
-  void ad_infinitum(int, std::vector<Position>, std::shared_ptr<MoveList>);
-
-  // const functions (or ones with value return)
 public:
   int get_num_moves() const;
   PieceColour get_turn() const;
@@ -40,9 +25,6 @@ public:
   const std::shared_ptr<MoveList> get_moves(std::shared_ptr<ChessPiece>) const;
   const std::shared_ptr<MoveList> get_moves(int) const;
   const std::shared_ptr<MoveList> get_moves(Position) const;
-  const std::shared_ptr<MoveList> get_legal_moves(std::shared_ptr<ChessPiece>) const;
-  const std::shared_ptr<MoveList> get_legal_moves(int) const;
-  const std::shared_ptr<MoveList> get_legal_moves(Position) const;
 
   std::string to_string() const;
 
@@ -50,6 +32,20 @@ public:
   ChessBoard(bool);
   void move(int, int);
   void move(Position, Position);
+
+private:
+  // std::vector<ChessPiece> m_pieces;
+  BoardMap m_board;
+  Moves m_moves;
+  PieceColour m_turn = WHITE;
+  int numMoves = 0;
+  bool debug = false;
+
+  void swap_turn();
+  void generate_moves();
+  void generate_piece_moves(int);
+  void generate_piece_moves(const std::shared_ptr<ChessPiece>);
+  void ad_infinitum(int, std::vector<Position>, std::shared_ptr<MoveList>, bool);
 };
 
 } // namespace DarkChess
