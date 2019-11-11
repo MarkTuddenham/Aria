@@ -57,14 +57,33 @@ void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_
     using DarkChess::operator<<;
 
     const std::shared_ptr<DarkChess::ChessPiece> cp = t_cb.get_piece(t_pos);
-    const std::shared_ptr<DarkChess::MoveList> p_moves = t_cb.get_moves(t_pos);
-    std::string str;
-
-    str += std::to_string(p_moves->size()) + " possible moves for " + cp->get_name() + " at " + std::to_string(t_pos) + ": ";
-    for (int i : *p_moves)
+    if (!cp)
     {
-        str += std::to_string(DarkChess::get_pos_from_index(i)) + ' ';
+        DC_WARN("No piece at {}.", std::to_string(t_pos));
+        return;
     }
 
-    DC_INFO(str);
+    const std::shared_ptr<DarkChess::MoveList> p_moves = t_cb.get_moves(t_pos);
+    if (!p_moves)
+    {
+        DC_CRITICAL("Piece ({} at {}) has no moves container!",
+                    cp->get_name(),
+                    std::to_string(t_pos));
+        return;
+    }
+
+    std::string str;
+
+    const int num_moves = p_moves->size();
+
+    str += "{:2d} possible move{:<1} for {:<12} at {}: ";
+
+    for (int i : *p_moves)
+        str += std::to_string(DarkChess::get_pos_from_index(i)) + ' ';
+
+    DC_INFO(str,
+            num_moves,
+            num_moves == 1 ? "" : "s",
+            cp->get_name(),
+            std::to_string(t_pos));
 }
