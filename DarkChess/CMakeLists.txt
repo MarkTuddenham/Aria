@@ -9,15 +9,26 @@ add_library(DarkChess
             core/log.cpp
             )
 
+if(MSVC)
+
 target_compile_options(DarkChess
 PRIVATE
-    "-O3" 
+	"/W3"
+)
+
+else()
+
+target_compile_options(DarkChess
+PRIVATE
+    "-O1" 
     # "-pthread"
     "-Wextra"
     "-Wpedantic"
     "-Wshadow"
     "-Wnon-virtual-dtor"
 )
+
+endif()
 
 target_include_directories(DarkChess
 PRIVATE
