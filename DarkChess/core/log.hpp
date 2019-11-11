@@ -27,4 +27,4 @@ public:
 #define DC_CORE_INFO(...) ::DarkChess::Log::get_core_logger()->info(__VA_ARGS__)
 #define DC_CORE_WARN(...) ::DarkChess::Log::get_core_logger()->warn(__VA_ARGS__)
 #define DC_CORE_ERROR(...) ::DarkChess::Log::get_core_logger()->error(__VA_ARGS__)
-#define DC_CORE_FATAL(...) ::DarkChess::Log::get_core_logger()->fatal(__VA_ARGS__)
+#define DC_CORE_CRITICAL(...) ::DarkChess::Log::get_core_logger()->critical(__VA_ARGS__)

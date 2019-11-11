@@ -14,4 +14,4 @@
 #define DC_INFO(...) ::DarkChess::Log::get_client_logger()->info(__VA_ARGS__)
 #define DC_WARN(...) ::DarkChess::Log::get_client_logger()->warn(__VA_ARGS__)
 #define DC_ERROR(...) ::DarkChess::Log::get_client_logger()->error(__VA_ARGS__)
-#define DC_FATAL(...) ::DarkChess::Log::get_client_logger()->fatal(__VA_ARGS__)
+#define DC_CRITICAL(...) ::DarkChess::Log::get_client_logger()->critical(__VA_ARGS__)
