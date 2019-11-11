@@ -12,21 +12,21 @@ add_library(DarkChess
 target_compile_options(DarkChess
 PRIVATE
     "-O3" 
-    "-pthread"
+    # "-pthread"
     "-Wextra"
     "-Wpedantic"
     "-Wshadow"
     "-Wnon-virtual-dtor"
 )
 
-target_include_directories(DarkChess 
-PRIVATE 
-"${PROJECT_SOURCE_DIR}/DarkChess/vendor/"
+target_include_directories(DarkChess
+PRIVATE
+    "${PROJECT_SOURCE_DIR}/DarkChess/vendor/"
 PUBLIC
-"${PROJECT_SOURCE_DIR}/" 
-"${PROJECT_BINARY_DIR}/"
+    "${PROJECT_SOURCE_DIR}/" 
+    "${PROJECT_BINARY_DIR}/"
 INTERFACE
-"${PROJECT_SOURCE_DIR}/DarkChess"
+    "${PROJECT_SOURCE_DIR}/DarkChess"
 )
 
 add_subdirectory(vendor/spdlog/)
