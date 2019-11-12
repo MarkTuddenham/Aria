@@ -36,14 +36,14 @@ public:
 private:
   BoardMap m_board;
   Moves m_moves;
-  PieceColour m_turn = WHITE;
+  PieceColour m_turn = PieceColour::WHITE;
+  std::map<Position, Position> m_pinned_pieces;
   int m_num_moves = 0;
   bool m_debug = false;
 
   void swap_turn();
   void generate_moves();
-  void generate_piece_moves(int);
-  void generate_piece_moves(const std::shared_ptr<ChessPiece>);
+  void prune_moves();
   void ad_infinitum(int, std::vector<Position>, std::shared_ptr<MoveList>, bool);
 };
 

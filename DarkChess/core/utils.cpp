@@ -29,6 +29,12 @@ bool out_of_bounds(Position t_pos)
     );
 }
 
+bool is_colinear(Position a, Position b, Position c) {
+	return (a.first * (b.second - c.second) +
+			b.first * (c.second - a.second) +
+			c.first * (a.second - b.second)) == 0;
+}
+
 std::ostream &operator<<(std::ostream &os, Position const &pos)
 {
     os << to_string(pos);

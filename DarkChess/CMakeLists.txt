@@ -13,7 +13,7 @@ if(MSVC)
 
 target_compile_options(DarkChess
 PRIVATE
-	"/W3"
+	"/W4"
 )
 
 else()

@@ -24,37 +24,37 @@ ChessBoard::ChessBoard(bool t_debug) : m_debug(t_debug)
 
     // White pawns (1,0) -> (1,7)
     for (int i = 8; i < 16; ++i)
-        make_piece(ChessPiece(WHITE, PAWN), i);
+        make_piece(ChessPiece(PieceColour::WHITE, PieceType::PAWN), i);
 
     // Black pawns (6,0) -> (6,7)
     for (int i = 48; i < 56; ++i)
-        make_piece(ChessPiece(BLACK, PAWN), i);
+        make_piece(ChessPiece(PieceColour::BLACK, PieceType::PAWN), i);
 
     // Knights
-    make_piece(ChessPiece(WHITE, KNIGHT), 1);
-    make_piece(ChessPiece(WHITE, KNIGHT), 6);
-    make_piece(ChessPiece(BLACK, KNIGHT), 57);
-    make_piece(ChessPiece(BLACK, KNIGHT), 62);
+    make_piece(ChessPiece(PieceColour::WHITE, PieceType::KNIGHT), 1);
+    make_piece(ChessPiece(PieceColour::WHITE, PieceType::KNIGHT), 6);
+    make_piece(ChessPiece(PieceColour::BLACK, PieceType::KNIGHT), 57);
+    make_piece(ChessPiece(PieceColour::BLACK, PieceType::KNIGHT), 62);
 
     // Bishops
-    make_piece(ChessPiece(WHITE, BISHOP), 2);
-    make_piece(ChessPiece(WHITE, BISHOP), 5);
-    make_piece(ChessPiece(BLACK, BISHOP), 58);
-    make_piece(ChessPiece(BLACK, BISHOP), 61);
+    make_piece(ChessPiece(PieceColour::WHITE, PieceType::BISHOP), 2);
+    make_piece(ChessPiece(PieceColour::WHITE, PieceType::BISHOP), 5);
+    make_piece(ChessPiece(PieceColour::BLACK, PieceType::BISHOP), 58);
+    make_piece(ChessPiece(PieceColour::BLACK, PieceType::BISHOP), 61);
 
     // Rooks
-    make_piece(ChessPiece(WHITE, ROOK), 0);
-    make_piece(ChessPiece(WHITE, ROOK), 7);
-    make_piece(ChessPiece(BLACK, ROOK), 56);
-    make_piece(ChessPiece(BLACK, ROOK), 63);
+    make_piece(ChessPiece(PieceColour::WHITE, PieceType::ROOK), 0);
+    make_piece(ChessPiece(PieceColour::WHITE, PieceType::ROOK), 7);
+    make_piece(ChessPiece(PieceColour::BLACK, PieceType::ROOK), 56);
+    make_piece(ChessPiece(PieceColour::BLACK, PieceType::ROOK), 63);
 
     // Queens
-    make_piece(ChessPiece(WHITE, QUEEN), 3);
-    make_piece(ChessPiece(BLACK, QUEEN), 59);
+    make_piece(ChessPiece(PieceColour::WHITE, PieceType::QUEEN), 3);
+    make_piece(ChessPiece(PieceColour::BLACK, PieceType::QUEEN), 59);
 
     // Kings
-    make_piece(ChessPiece(WHITE, KING), 4);
-    make_piece(ChessPiece(BLACK, KING), 60);
+    make_piece(ChessPiece(PieceColour::WHITE, PieceType::KING), 4);
+    make_piece(ChessPiece(PieceColour::BLACK, PieceType::KING), 60);
 
     generate_moves();
 }
@@ -94,7 +94,7 @@ const std::shared_ptr<ChessPiece> ChessBoard::get_piece(Position t_pos) const
 
 void ChessBoard::swap_turn()
 {
-    m_turn = PieceColour((m_turn + 1) % 2);
+    m_turn = PieceColour((static_cast<std::underlying_type<PieceColour>::type>(m_turn) + 1) % 2);
 }
 
 void ChessBoard::move(int t_from_ind, int t_to_ind)
@@ -109,8 +109,8 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     if (!p)
     {
         DC_CORE_WARN("Invalid move {} to {}: No Piece.",
-                     std::to_string(get_pos_from_index(t_to_ind)),
-                     std::to_string(get_pos_from_index(t_from_ind)));
+                     std::to_string(get_pos_from_index(t_from_ind)),
+                     std::to_string(get_pos_from_index(t_to_ind)));
         return;
     }
 
@@ -119,25 +119,24 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     if (!m_debug && p->get_colour() != m_turn)
     {
         DC_CORE_WARN("Invalid move {} to {}: Not your turn.",
-                     std::to_string(get_pos_from_index(t_to_ind)),
-                     std::to_string(get_pos_from_index(t_from_ind)));
+                     std::to_string(get_pos_from_index(t_from_ind)),
+                     std::to_string(get_pos_from_index(t_to_ind)));
         return;
     }
 
-    // //TODO enable when legal moves work
-    // std::shared_ptr<MoveList> legal_moves = get_moves(p);
-    // if (!legal_moves)
-    //     DC_CORE_CRITICAL("Piece ({} at {}) has no moves container!",
-    //                      p->get_name(),
-    //                      std::to_string(t_from_ind));
+     std::shared_ptr<MoveList> legal_moves = get_moves(p);
+     if (!legal_moves)
+         DC_CORE_CRITICAL("Piece ({} at {}) has no moves container!",
+                          p->get_name(),
+                          std::to_string(t_from_ind));
 
-    // if (!debug && legal_moves && std::find(begin(*legal_moves), end(*legal_moves), t_to_ind) == end(*legal_moves))
-    // {
-    //     DC_CORE_WARN("Invalid move {} to {}: Not a legal move.",
-    //                  std::to_string(get_pos_from_index(t_to_ind)),
-    //                  std::to_string(get_pos_from_index(t_from_ind)));
-    //     return;
-    // }
+     if (!m_debug && legal_moves && std::find(begin(*legal_moves), end(*legal_moves), t_to_ind) == end(*legal_moves))
+     {
+         DC_CORE_WARN("Invalid move {} to {}: Not a legal move.",
+                      std::to_string(get_pos_from_index(t_from_ind)),
+                      std::to_string(get_pos_from_index(t_to_ind)));
+         return;
+     }
 
     // Add piece in its new place
     m_board[t_to_ind] = m_board[t_from_ind];
@@ -151,8 +150,8 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 
     DC_CORE_INFO("Move: {} from {} to {}",
                  p->get_name(),
-                 std::to_string(get_pos_from_index(t_to_ind)),
-                 std::to_string(get_pos_from_index(t_from_ind)));
+                 std::to_string(get_pos_from_index(t_from_ind)),
+                 std::to_string(get_pos_from_index(t_to_ind)));
 
     // Regenerate possible moves
     generate_moves();
@@ -165,197 +164,211 @@ void ChessBoard::move(Position t_from_pos, Position t_to_pos)
 
 void ChessBoard::generate_moves()
 {
-    for (auto ind_piece_pair : m_board)
-        generate_piece_moves(ind_piece_pair.first);
+	for (auto ind_piece_pair : m_board)
+	{
+		std::shared_ptr<ChessPiece> current_piece = ind_piece_pair.second;
+		int current_ind = ind_piece_pair.first;
+		Position current_pos = get_pos_from_index(current_ind);
+
+
+
+		if (!current_piece)
+		{
+			DC_CORE_ERROR("Unknown Piece!");
+			return;
+		}
+
+		const std::shared_ptr<MoveList> piece_moves = get_moves(current_piece);
+		piece_moves->clear();
+
+
+		auto add_moves_from_relative = [&](std::vector<Position> relative_moves) {
+			for (Position rel_move_pos : relative_moves)
+			{
+				const Position abs_move_pos = current_pos + rel_move_pos;
+
+				if (out_of_bounds(abs_move_pos))
+					continue;
+
+				const std::shared_ptr<ChessPiece> possible_capture = get_piece(abs_move_pos);
+
+				// If there is not a piece, or the piece is capturable
+				if (!possible_capture || (possible_capture && possible_capture->get_colour() != current_piece->get_colour()))
+				{
+					piece_moves->push_back(get_index_from_pos(abs_move_pos));
+				}
+			}
+		};
+
+		switch (current_piece->get_type())
+		{
+		case PieceType::PAWN:
+		{
+			//rotation based on colour -> only applies to pawns.
+			int rotation = (current_piece->get_colour() == PieceColour::WHITE) ? 1 : -1;
+
+			// Check forward move
+			{
+				const Position rel_move_pos = { 0, 1 };
+				const Position abs_move_pos = current_pos + rel_move_pos * rotation;
+
+				const std::shared_ptr<ChessPiece> in_front_piece = get_piece(abs_move_pos);
+
+				if (!in_front_piece && !out_of_bounds(abs_move_pos))
+					piece_moves->push_back(get_index_from_pos(abs_move_pos));
+			}
+
+			// Check capturing moves
+			for (Position rel_move_pos : std::vector<Position>{ {-1, 1}, {1, 1} })
+			{
+				const Position abs_move_pos = current_pos + rel_move_pos * rotation;
+
+				if (out_of_bounds(abs_move_pos))
+					continue;
+
+				const std::shared_ptr<ChessPiece> possible_capture = get_piece(abs_move_pos);
+
+				if (possible_capture && possible_capture->get_colour() != current_piece->get_colour())
+					piece_moves->push_back(get_index_from_pos(abs_move_pos));
+			}
+
+			break;
+		}
+
+		case PieceType::KNIGHT:
+		{
+			add_moves_from_relative({ {1, 2},
+									 {2, 1},
+									 {-1, 2},
+									 {-2, 1},
+									 {1, -2},
+									 {2, -1},
+									 {-1, -2},
+									 {-2, -1} });
+			break;
+		}
+
+		case PieceType::BISHOP:
+		{
+			ad_infinitum(current_ind,
+				{ {1, 1}, {1, -1}, {-1, 1}, {-1, -1} },
+				piece_moves, false);
+			break;
+		}
+
+		case PieceType::ROOK:
+		{
+			ad_infinitum(current_ind,
+				{ {0, 1}, {1, 0}, {0, -1}, {-1, 0} },
+				piece_moves, false);
+			break;
+		}
+
+		case PieceType::QUEEN:
+		{
+			ad_infinitum(current_ind,
+				{ {1, 1},
+				 {1, -1},
+				 {-1, 1},
+				 {-1, -1},
+				 {0, 1},
+				 {1, 0},
+				 {0, -1},
+				 {-1, 0} },
+				piece_moves, false);
+			break;
+		}
+
+		case PieceType::KING:
+		{
+			add_moves_from_relative({ {1, 1},
+									 {1, -1},
+									 {-1, 1},
+									 {-1, -1},
+									 {0, 1},
+									 {1, 0},
+									 {0, -1},
+									 {-1, 0} });
+
+			break;
+		}
+
+		default:
+			// TODO raise error
+			DC_CORE_CRITICAL("Unknown Piece.");
+			break;
+		}
+	}
+
+	prune_moves();
 }
 
-void ChessBoard::generate_piece_moves(const std::shared_ptr<ChessPiece> t_cp)
-{
-    int ind = -1;
+void ChessBoard::prune_moves() {
 
-    // for (auto itr = m_board.begin(); itr != m_board.end(); itr++)
-    for (auto ind_piece_pair : m_board)
-    {
-        if (t_cp == ind_piece_pair.second)
-        {
-            ind = ind_piece_pair.first;
-            break;
-        }
-    }
-    return generate_piece_moves(ind);
+	for (auto map_entry : m_pinned_pieces)
+	{
+		Position pinned_pos = map_entry.first;
+		Position pinned_by_pos = map_entry.second;
+		std::shared_ptr<ChessPiece> pinned_piece = get_piece(pinned_pos);
+
+		std::shared_ptr<MoveList> pinned_moves = get_moves(pinned_pos);
+
+		if (!pinned_moves) {
+			DC_CORE_CRITICAL("{} at {} has no moves container.", pinned_piece->get_name(), std::to_string(pinned_pos));
+			continue;
+		}
+
+		std::shared_ptr<MoveList> new_moves = std::make_shared<MoveList>();
+
+			for (int move : *pinned_moves) {
+				Position move_pos = get_pos_from_index(move);
+				if (is_colinear(move_pos, pinned_pos, pinned_by_pos)) {
+					DC_CORE_TRACE("{} is colinear to {} and {}, it is a valid move.", std::to_string(move_pos), std::to_string(pinned_pos), std::to_string(pinned_by_pos));
+					new_moves->push_back(move);
+				}
+			}
+
+			m_moves[pinned_piece] = new_moves;
+			DC_CORE_TRACE("{} now only has {} moves.", pinned_piece->get_name(), get_moves(pinned_piece)->size());
+		
+	}
+
+	m_pinned_pieces.clear();
+
 }
-
-void ChessBoard::generate_piece_moves(int t_ind)
-{
-
-    // get current piece from board
-    const std::shared_ptr<ChessPiece> cp = get_piece(t_ind);
-
-    if (!cp)
-    {
-        DC_CORE_ERROR("Unknown Piece!");
-        return;
-    }
-
-    const std::shared_ptr<MoveList> piece_moves = get_moves(cp);
-    piece_moves->clear();
-
-    const Position current_pos = get_pos_from_index(t_ind);
-
-    auto add_moves_from_relative = [&](std::vector<Position> relative_moves) {
-        for (Position rel_move_pos : relative_moves)
-        {
-            const Position abs_move_pos = current_pos + rel_move_pos;
-
-            if (out_of_bounds(abs_move_pos))
-                continue;
-
-            const std::shared_ptr<ChessPiece> possible_capture = get_piece(abs_move_pos);
-
-            // If there is not a piece, or the piece is capturable
-            if (!possible_capture || (possible_capture && possible_capture->get_colour() != cp->get_colour()))
-            {
-                piece_moves->push_back(get_index_from_pos(abs_move_pos));
-            }
-        }
-    };
-
-    switch (cp->get_type())
-    {
-    case PAWN:
-    {
-        //rotation based on colour -> only applies to pawns.
-        int rotation = (cp->get_colour() == WHITE) ? 1 : -1;
-
-        // Check forward move
-        {
-            const Position rel_move_pos = {0, 1};
-            const Position abs_move_pos = current_pos + rel_move_pos * rotation;
-
-            const std::shared_ptr<ChessPiece> in_front_piece = get_piece(abs_move_pos);
-
-            if (!in_front_piece && !out_of_bounds(abs_move_pos))
-                piece_moves->push_back(get_index_from_pos(abs_move_pos));
-        }
-
-        // Check capturing moves
-        for (Position rel_move_pos : std::vector<Position>{{-1, 1}, {1, 1}})
-        {
-            const Position abs_move_pos = current_pos + rel_move_pos * rotation;
-
-            if (out_of_bounds(abs_move_pos))
-                continue;
-
-            const std::shared_ptr<ChessPiece> possible_capture = get_piece(abs_move_pos);
-
-            if (possible_capture && possible_capture->get_colour() != cp->get_colour())
-                piece_moves->push_back(get_index_from_pos(abs_move_pos));
-        }
-
-        break;
-    }
-
-    case KNIGHT:
-    {
-        add_moves_from_relative({{1, 2},
-                                 {2, 1},
-                                 {-1, 2},
-                                 {-2, 1},
-                                 {1, -2},
-                                 {2, -1},
-                                 {-1, -2},
-                                 {-2, -1}});
-        break;
-    }
-
-    case BISHOP:
-    {
-        ad_infinitum(t_ind,
-                     {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}},
-                     piece_moves, false);
-        break;
-    }
-
-    case ROOK:
-    {
-        ad_infinitum(t_ind,
-                     {{0, 1}, {1, 0}, {0, -1}, {-1, 0}},
-                     piece_moves, false);
-        break;
-    }
-
-    case QUEEN:
-    {
-        ad_infinitum(t_ind,
-                     {{1, 1},
-                      {1, -1},
-                      {-1, 1},
-                      {-1, -1},
-                      {0, 1},
-                      {1, 0},
-                      {0, -1},
-                      {-1, 0}},
-                     piece_moves, false);
-        break;
-    }
-
-    case KING:
-    {
-        add_moves_from_relative({{1, 1},
-                                 {1, -1},
-                                 {-1, 1},
-                                 {-1, -1},
-                                 {0, 1},
-                                 {1, 0},
-                                 {0, -1},
-                                 {-1, 0}});
-
-        break;
-    }
-
-    default:
-        // TODO raise error
-        DC_CORE_ERROR("Unknown Piece.");
-        break;
-    }
-} // namespace DarkChess
 
 void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std::shared_ptr<MoveList> t_movelist, bool inc_targets)
 {
-
-    bool looking_for_king = false;
-
-    const Position pos = get_pos_from_index(t_ind);
-    const std::shared_ptr<ChessPiece> cp = get_piece(t_ind);
+    const Position current_pos = get_pos_from_index(t_ind);
+    const std::shared_ptr<ChessPiece> current_piece = get_piece(t_ind);
 
     for (Position dir : t_directions)
     {
-
-        std::shared_ptr<ChessPiece> potentially_pinned;
+		bool looking_for_king = false;
+		std::shared_ptr<ChessPiece> potentially_pinned_piece = nullptr;
+		Position potentially_pinned_piece_pos;
 
         // There can only be a max of 7 iterations before going out of bounds
         // start at 1 since 0 will be the current position.
         for (int i = 1; i < 8; ++i)
         {
-            const Position to_pos = pos + dir * i;
+            const Position to_pos = current_pos + dir * i;
 
             if (out_of_bounds(to_pos))
                 break;
 
             const std::shared_ptr<ChessPiece> to_piece = get_piece(to_pos);
 
-            bool is_enemy_piece = to_piece && to_piece->get_colour() != cp->get_colour();
+            bool is_enemy_piece = to_piece && to_piece->get_colour() != current_piece->get_colour();
 
             if (looking_for_king)
             {
                 // Found enemy king with no blockers -> piece is pinned.
-                if (is_enemy_piece && to_piece && to_piece->get_type() == KING)
+                if (is_enemy_piece && to_piece->get_type() == PieceType::KING)
                 {
-                    // TODO
-                    // if moves have already been generated for this piece
-                    // then remove the ones that don't lie on the attacking line.
+					DC_CORE_TRACE("{} is pinned!", potentially_pinned_piece->get_name());
+					m_pinned_pieces.insert({ potentially_pinned_piece_pos, current_pos });
 
-                    // if no moves generated then mark as pinned, with pinned direction.
                 }
                 else if (to_piece)
                 {
@@ -377,9 +390,11 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std
                 {
                     // Found enemy piece: Stop looking for moves & now look to see if piece is pinned.
                     t_movelist->push_back(get_index_from_pos(to_pos));
+					DC_CORE_TRACE("Checking if {} is pinned by the {}", to_piece->get_name(), current_piece->get_name());
                     looking_for_king = true;
-                    potentially_pinned = to_piece;
-                    break;
+                    potentially_pinned_piece = to_piece;
+					potentially_pinned_piece_pos = to_pos;
+                    continue;
                 }
                 else
                 {

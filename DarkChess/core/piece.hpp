@@ -7,7 +7,7 @@
 namespace DarkChess
 {
 
-enum PieceType
+enum class PieceType
 {
   PAWN,
   KNIGHT,
@@ -17,7 +17,7 @@ enum PieceType
   KING
 };
 
-enum PieceColour
+enum class PieceColour
 {
   WHITE,
   BLACK
@@ -44,26 +44,26 @@ private:
 };
 
 const std::map<const PieceType, const std::string> piece_type_string({
-    {PAWN, "Pawn"},
-    {KNIGHT, "Knight"},
-    {BISHOP, "Bishop"},
-    {ROOK, "Rook"},
-    {QUEEN, "Queen"},
-    {KING, "King"},
+    {PieceType::PAWN, "Pawn"},
+    {PieceType::KNIGHT, "Knight"},
+    {PieceType::BISHOP, "Bishop"},
+    {PieceType::ROOK, "Rook"},
+    {PieceType::QUEEN, "Queen"},
+    {PieceType::KING, "King"},
 });
 
 const std::map<const PieceType, const char> piece_symbol_string({
-    {PAWN, 'p'},
-    {KNIGHT, 'n'},
-    {BISHOP, 'b'},
-    {ROOK, 'r'},
-    {QUEEN, 'q'},
-    {KING, 'k'},
+    {PieceType::PAWN, 'p'},
+    {PieceType::KNIGHT, 'n'},
+    {PieceType::BISHOP, 'b'},
+    {PieceType::ROOK, 'r'},
+    {PieceType::QUEEN, 'q'},
+    {PieceType::KING, 'k'},
 });
 
 const std::map<const PieceColour, const std::string> piece_colour_string({
-    {WHITE, "White"},
-    {BLACK, "Black"},
+    {PieceColour::WHITE, "White"},
+    {PieceColour::BLACK, "Black"},
 });
 
 } // namespace DarkChess
