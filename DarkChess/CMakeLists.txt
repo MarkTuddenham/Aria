@@ -9,6 +9,10 @@ add_library(DarkChess
             core/log.cpp
             )
 
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+	target_compile_definitions(DarkChess PRIVATE "DEBUG")
+endif()
+
 if(MSVC)
 	target_compile_options(DarkChess
 	PRIVATE

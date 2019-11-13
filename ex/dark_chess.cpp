@@ -1,4 +1,5 @@
 #include <DarkChess.hpp>
+#include <iostream>
 
 void print_moves(const DarkChess::ChessBoard& t_cb, const DarkChess::Position t_pos);
 
@@ -7,6 +8,10 @@ int main()
 	DarkChess::Log::init(); // MUST, need to move to an entry point / Engine INIT
 
 	DC_INFO("Dark Chess Version {:d}.{:d}", DarkChess_VERSION_MAJOR, DarkChess_VERSION_MINOR);
+
+#ifdef DEBUG
+	DC_INFO("App running in debug mode.");
+#endif
 
 	DarkChess::ChessBoard cb;
 

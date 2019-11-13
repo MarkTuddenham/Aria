@@ -10,6 +10,10 @@ PRIVATE
     DarkChess
 )
 
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+	target_compile_definitions(DarkChessExample PRIVATE "DEBUG")
+endif()
+
 target_include_directories(DarkChessExample 
 PRIVATE
     "${PROJECT_BINARY_DIR}"

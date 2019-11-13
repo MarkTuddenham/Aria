@@ -22,9 +22,19 @@ private:
 
 } // namespace DarkChess
 
-// Core Macros
-#define DC_CORE_TRACE(...) ::DarkChess::Log::get_core_logger()->trace(__VA_ARGS__)
-#define DC_CORE_INFO(...) ::DarkChess::Log::get_core_logger()->info(__VA_ARGS__)
-#define DC_CORE_WARN(...) ::DarkChess::Log::get_core_logger()->warn(__VA_ARGS__)
-#define DC_CORE_ERROR(...) ::DarkChess::Log::get_core_logger()->error(__VA_ARGS__)
-#define DC_CORE_CRITICAL(...) ::DarkChess::Log::get_core_logger()->critical(__VA_ARGS__)
+
+#ifdef DEBUG
+	// Core Macros
+	#define DC_CORE_TRACE(...) ::DarkChess::Log::get_core_logger()->trace(__VA_ARGS__)
+	#define DC_CORE_INFO(...) ::DarkChess::Log::get_core_logger()->info(__VA_ARGS__)
+	#define DC_CORE_WARN(...) ::DarkChess::Log::get_core_logger()->warn(__VA_ARGS__)
+	#define DC_CORE_ERROR(...) ::DarkChess::Log::get_core_logger()->error(__VA_ARGS__)
+	#define DC_CORE_CRITICAL(...) ::DarkChess::Log::get_core_logger()->critical(__VA_ARGS__)
+#else
+	// Core Macros
+	#define DC_CORE_TRACE(...) 
+	#define DC_CORE_INFO(...) 
+	#define DC_CORE_WARN(...) 
+	#define DC_CORE_ERROR(...)
+	#define DC_CORE_CRITICAL(...) 
+#endif // DEBUG
