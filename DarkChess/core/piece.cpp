@@ -1,7 +1,7 @@
 #include <ostream>
 #include <string>
 
-#include "DarkChess/piece.hpp"
+#include "DarkChess/core/piece.hpp"
 
 namespace DarkChess
 {
@@ -27,7 +27,7 @@ char ChessPiece::get_symbol() const
 {
     char sym = piece_symbol_string.at(get_type());
 
-    if (get_colour() == WHITE)
+    if (get_colour() == PieceColour::WHITE)
         sym = toupper(sym);
 
     return sym;

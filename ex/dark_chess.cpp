@@ -1,71 +1,84 @@
-#include <iostream>
 #include <DarkChess.hpp>
+#include <iostream>
 
-void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_pos);
+void print_moves(const DarkChess::ChessBoard& t_cb, const DarkChess::Position t_pos);
 
 int main()
 {
-    std::cout << "Dark Chess Version " << DarkChess_VERSION_MAJOR << '.' << DarkChess_VERSION_MINOR << "\n";
+	DarkChess::Log::init(); // MUST, need to move to an entry point / Engine INIT
 
-    DarkChess::ChessBoard cb;
+	DC_INFO("Dark Chess Version {:d}.{:d}", DarkChess_VERSION_MAJOR, DarkChess_VERSION_MINOR);
 
-    cb.pretty_print();
+#ifdef DEBUG
+	DC_INFO("App running in debug mode.");
+#endif
 
-    print_moves(cb, {2, 1});
+	DarkChess::ChessBoard cb;
 
-    std::cout << cb.get_turn_name() << "'s turn \n";
-    cb.move(3, 28);
-    std::cout << cb.get_turn_name() << "'s turn \n";
-    cb.move(91, 20); // Should fail
-    std::cout << cb.get_turn_name() << "'s turn \n";
-    cb.move({2, 6}, {2, 5});
-    std::cout << cb.get_turn_name() << "'s turn \n";
+	DC_INFO(cb.to_string());
 
-    cb.pretty_print();
+	print_moves(cb, { 2, 1 });
 
-    std::cout << "Number of moves: " << cb.get_num_moves() << std::endl;
+	cb.move({ 3, 1 }, { 3, 2 });
+	cb.move(91, 20); // Should fail
+	cb.move({ 6, 6 }, { 6, 5 });
+	cb.move({ 2, 0 }, { 5, 3 });
 
-    print_moves(cb, {4, 3});
+	DC_INFO(cb.to_string());
 
-    cb.move({6, 0}, {5, 2});
-    cb.move({5, 7}, {3, 2}); // Teleporting yay!
-    cb.move({4, 1}, {4, 2});
-    cb.pretty_print();
+	DC_INFO("{} moves played", cb.get_num_moves());
 
-    // Pawns
-    print_moves(cb, {4, 3});
-    print_moves(cb, {5, 6});
+	print_moves(cb, { 3, 0 });
 
-    // Knight
-    print_moves(cb, {1, 0});
+	cb.move({ 4, 6 }, { 4, 5 });
+	cb.move({ 4, 1 }, { 4, 2 });
+	cb.move({ 5, 7 }, { 1, 3 });
+	DC_WARN("Should be check!");
+	cb.move({ 3, 0 }, { 3, 1 });
+	DC_WARN("Queen should be pinned!");
+	print_moves(cb, { 3, 1 });
+	DC_INFO(cb.to_string());
+	cb.move({ 1, 3 }, { 2, 4 });
+	DC_WARN("Queen should be un-pinned!");
+	print_moves(cb, { 3, 1 });
 
-    // King
-    print_moves(cb, {4, 0});
 
-    // Bishop
-    print_moves(cb, {5, 0});
 
-    // Rook
-    print_moves(cb, {7, 7});
-    print_moves(cb, {7, 0});
-
-    // Queen
-    print_moves(cb, {4, 3});
-
-    return 0;
+	return 0;
 }
 
-void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_pos)
+void print_moves(const DarkChess::ChessBoard& t_cb, const DarkChess::Position t_pos)
 {
-    using DarkChess::operator<<;
+	using DarkChess::operator<<;
 
-    const std::shared_ptr<DarkChess::ChessPiece> cp = t_cb.get_piece(t_pos);
-    const std::shared_ptr<DarkChess::MoveList> p_moves = t_cb.get_moves(t_pos);
+	const std::shared_ptr<DarkChess::ChessPiece> cp = t_cb.get_piece(t_pos);
+	if (!cp)
+	{
+		DC_WARN("No piece at {}.", std::to_string(t_pos));
+		return;
+	}
 
-    std::cout << p_moves->size() << " possible moves for " << *cp << " at " << t_pos << ": ";
-    for (int i : *p_moves)
-    {
-        std::cout << DarkChess::get_pos_from_index(i) << ' ';
-    }
-    std::cout << std::endl;
+	const std::shared_ptr<DarkChess::MoveList> p_moves = t_cb.get_moves(t_pos);
+	if (!p_moves)
+	{
+		DC_CRITICAL("Piece ({} at {}) has no moves container!",
+			cp->get_name(),
+			std::to_string(t_pos));
+		return;
+	}
+
+	std::string str;
+
+	const int num_moves = static_cast<int>(p_moves->size());
+
+	str += "{:2d} possible move{:<1} for {:<12} at {}: ";
+
+	for (int i : *p_moves)
+		str += std::to_string(DarkChess::get_pos_from_index(i)) + ' ';
+
+	DC_INFO(str,
+		num_moves,
+		num_moves == 1 ? "" : "s",
+		cp->get_name(),
+		std::to_string(t_pos));
 }

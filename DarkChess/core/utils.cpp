@@ -1,10 +1,9 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include <iostream>
 
-#include "DarkChess/utils.hpp"
-#include "DarkChess/piece.hpp"
+#include "DarkChess/core/utils.hpp"
+#include "DarkChess/core/piece.hpp"
 
 namespace DarkChess
 {
@@ -30,9 +29,15 @@ bool out_of_bounds(Position t_pos)
     );
 }
 
+bool is_colinear(Position a, Position b, Position c) {
+	return (a.first * (b.second - c.second) +
+			b.first * (c.second - a.second) +
+			c.first * (a.second - b.second)) == 0;
+}
+
 std::ostream &operator<<(std::ostream &os, Position const &pos)
 {
-    os << "(" << pos.first << "," << pos.second << ")";
+    os << to_string(pos);
     return os;
 }
 
@@ -52,3 +57,13 @@ Position operator*(const int &i, const Position &p)
 }
 
 } // namespace DarkChess
+
+namespace std
+{
+
+std::string to_string(const DarkChess::Position &pos)
+{
+    return "(" + std::to_string(pos.first) + "," + std::to_string(pos.second) + ")";
+}
+
+} // namespace std

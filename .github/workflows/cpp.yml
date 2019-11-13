@@ -1,0 +1,29 @@
+name: C++ CI
+
+on:
+  push:
+    branches:    
+      - master 
+      - dev
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    name: Build - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: recursive
+    - name: mkdir
+      run: mkdir -p _build/
+    - name: Setup cmake 
+      working-directory: _build
+      run: cmake ..
+    - name: build
+      run: cmake --build _build/
