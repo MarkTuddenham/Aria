@@ -24,6 +24,6 @@ jobs:
       run: mkdir -p _build/
     - name: Setup cmake 
       working-directory: _build
-      run: cmake ..
+      run: cmake -DCMAKE_BUILD_TYPE=Release ..
     - name: build
       run: cmake --build _build/
