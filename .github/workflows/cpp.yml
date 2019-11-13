@@ -14,13 +14,13 @@ jobs:
     name: Build - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-	  matrix:
-	    os: [ubuntu-latest, windows-latest, macos-latest]
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
     - uses: actions/checkout@v1
     - name: mkdir
       run: mkdir -p _build/
-	- name: Setup cmake 
-	  run: cmake -H. -B_build/ 
-	- name: build
-	  run: cmake --build _build/
+    - name: Setup cmake 
+      run: cmake -H. -B_build/ 
+    - name: build
+      run: cmake --build _build/
