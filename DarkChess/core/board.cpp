@@ -174,8 +174,7 @@ void ChessBoard::generate_moves()
 
 		if (!current_piece)
 		{
-			//TODO make critical
-			DC_CORE_ERROR("Unknown Piece!");
+			DC_CORE_CRITICAL("Hanging piece pointer ({}) in BoardMap!", std::to_string(current_pos));
 			return;
 		}
 
