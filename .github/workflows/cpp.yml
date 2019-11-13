@@ -18,9 +18,12 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
     - uses: actions/checkout@v1
+	  with:
+        submodules: recursive
     - name: mkdir
       run: mkdir -p _build/
     - name: Setup cmake 
-      run: cmake -H. -B_build/ 
+	  working-directory: _build
+      run: cmake ..
     - name: build
       run: cmake --build _build/

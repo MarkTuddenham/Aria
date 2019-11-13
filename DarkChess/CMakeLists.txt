@@ -10,24 +10,20 @@ add_library(DarkChess
             )
 
 if(MSVC)
-
-target_compile_options(DarkChess
-PRIVATE
-	"/W4"
-)
-
+	target_compile_options(DarkChess
+	PRIVATE
+		"/W4"
+	)
 else()
-
-target_compile_options(DarkChess
-PRIVATE
-    "-O1" 
-    # "-pthread"
-    "-Wextra"
-    "-Wpedantic"
-    "-Wshadow"
-    "-Wnon-virtual-dtor"
-)
-
+	target_compile_options(DarkChess
+	PRIVATE
+		"-O1" 
+		# "-pthread"
+		"-Wextra"
+		"-Wpedantic"
+		"-Wshadow"
+		"-Wnon-virtual-dtor"
+	)
 endif()
 
 target_include_directories(DarkChess
