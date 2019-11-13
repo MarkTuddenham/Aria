@@ -174,6 +174,7 @@ void ChessBoard::generate_moves()
 
 		if (!current_piece)
 		{
+			//TODO make critical
 			DC_CORE_ERROR("Unknown Piece!");
 			return;
 		}
