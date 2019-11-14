@@ -51,6 +51,13 @@ int main()
 	DC_WARN("Black king should no legal moves!");
 	print_moves(cb, { 4, 7 });
 
+	cb.move({ 1, 3 }, { 5, 7 });
+	DC_INFO(cb.to_string());
+	DC_WARN("Black king is in check. Only the black king should be able to move.");
+	print_moves(cb, { 4, 7 });
+	print_moves(cb, { 6, 7 });
+	print_moves(cb, { 3, 7 });
+
 
 	return 0;
 }
