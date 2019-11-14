@@ -6,6 +6,7 @@ add_library(DarkChess
             core/board.cpp
             core/piece.cpp
             core/utils.cpp
+            core/timer.cpp
             core/log.cpp
             )
 
