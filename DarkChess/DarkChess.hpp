@@ -7,6 +7,7 @@
 #include "DarkChess/core/board.hpp"
 #include "DarkChess/core/piece.hpp"
 #include "DarkChess/core/utils.hpp"
+#include "DarkChess/core/timer.hpp"
 #include "DarkChess/core/log.hpp"
 
 
