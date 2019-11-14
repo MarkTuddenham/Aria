@@ -456,6 +456,7 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std
 						m_own_piece_threats.insert({ current_piece, std::make_shared<MoveList>(MoveList()) });
 					}
 					m_own_piece_threats.at(current_piece)->push_back(get_index_from_pos(to_pos));
+					break;
 
                 }
             }
