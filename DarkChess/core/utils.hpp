@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <memory>
 
 #include "DarkChess/core/piece.hpp"
@@ -12,8 +12,8 @@ namespace DarkChess
 typedef std::vector<int> MoveList;
 typedef std::pair<int, int> Position;
 
-typedef std::map<int, std::shared_ptr<ChessPiece>> BoardMap;
-typedef std::map<std::shared_ptr<ChessPiece>, std::shared_ptr<MoveList>> Moves;
+typedef std::unordered_map<int, std::shared_ptr<ChessPiece>> BoardMap;
+typedef std::unordered_map<std::shared_ptr<ChessPiece>, std::shared_ptr<MoveList>> Moves;
 
 Position get_pos_from_index(int);
 int get_index_from_pos(Position);
