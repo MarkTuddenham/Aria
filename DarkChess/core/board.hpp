@@ -36,6 +36,7 @@ public:
 private:
   BoardMap m_board;
   Moves m_moves;
+  Moves m_own_piece_threats;
   PieceColour m_turn = PieceColour::WHITE;
   std::map<Position, Position> m_pinned_pieces;
   int m_num_moves = 0;
@@ -44,7 +45,7 @@ private:
   void swap_turn();
   void generate_moves();
   void prune_moves();
-  void ad_infinitum(int, std::vector<Position>, std::shared_ptr<MoveList>, bool);
+  void ad_infinitum(int, std::vector<Position>, std::shared_ptr<MoveList>);
 };
 
 } // namespace DarkChess

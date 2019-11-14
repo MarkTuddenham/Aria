@@ -6,6 +6,7 @@ void print_moves(const DarkChess::ChessBoard& t_cb, const DarkChess::Position t_
 int main()
 {
 	DarkChess::Log::init(); // MUST, need to move to an entry point / Engine INIT
+	auto t = DarkChess::time::Timer("App");
 
 	DC_INFO("Dark Chess Version {:d}.{:d}", DarkChess_VERSION_MAJOR, DarkChess_VERSION_MINOR);
 
@@ -35,13 +36,20 @@ int main()
 	cb.move({ 5, 7 }, { 1, 3 });
 	DC_WARN("Should be check!");
 	cb.move({ 3, 0 }, { 3, 1 });
+
+	DC_INFO(cb.to_string());
 	DC_WARN("Queen should be pinned!");
 	print_moves(cb, { 3, 1 });
-	DC_INFO(cb.to_string());
 	cb.move({ 1, 3 }, { 2, 4 });
 	DC_WARN("Queen should be un-pinned!");
 	print_moves(cb, { 3, 1 });
 
+	cb.move({ 3, 1 }, { 1, 3 });
+	cb.move({ 2, 4 }, { 4, 2 });
+	DC_INFO(cb.to_string());
+
+	DC_WARN("Black king should no legal moves!");
+	print_moves(cb, { 4, 7 });
 
 
 	return 0;

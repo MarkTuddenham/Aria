@@ -1,4 +1,3 @@
-#include <map>
 #include <vector>
 #include <algorithm>
 #include <memory>
@@ -6,6 +5,7 @@
 #include "DarkChess/core/board.hpp"
 #include "DarkChess/core/piece.hpp"
 #include "DarkChess/core/utils.hpp"
+#include "DarkChess/core/timer.hpp"
 #include "DarkChess/core/log.hpp"
 
 namespace DarkChess
@@ -19,7 +19,8 @@ ChessBoard::ChessBoard(bool t_debug) : m_debug(t_debug)
     auto make_piece = [&](ChessPiece cp, int i) {
         std::shared_ptr<ChessPiece> cp_ptr = std::make_shared<ChessPiece>(cp);
         m_board.insert({i, cp_ptr});
-        m_moves.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
+		m_moves.insert({ cp_ptr, std::make_shared<MoveList>(MoveList()) });
+		m_own_piece_threats.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
     };
 
     // White pawns (1,0) -> (1,7)
@@ -164,6 +165,8 @@ void ChessBoard::move(Position t_from_pos, Position t_to_pos)
 
 void ChessBoard::generate_moves()
 {
+
+	auto t = time::Timer("ChessBoard::generate_moves()");
 	for (auto ind_piece_pair : m_board)
 	{
 		std::shared_ptr<ChessPiece> current_piece = ind_piece_pair.second;
@@ -252,7 +255,7 @@ void ChessBoard::generate_moves()
 		{
 			ad_infinitum(current_ind,
 				{ {1, 1}, {1, -1}, {-1, 1}, {-1, -1} },
-				piece_moves, false);
+				piece_moves);
 			break;
 		}
 
@@ -260,7 +263,7 @@ void ChessBoard::generate_moves()
 		{
 			ad_infinitum(current_ind,
 				{ {0, 1}, {1, 0}, {0, -1}, {-1, 0} },
-				piece_moves, false);
+				piece_moves);
 			break;
 		}
 
@@ -275,7 +278,7 @@ void ChessBoard::generate_moves()
 				 {1, 0},
 				 {0, -1},
 				 {-1, 0} },
-				piece_moves, false);
+				piece_moves);
 			break;
 		}
 
@@ -305,6 +308,9 @@ void ChessBoard::generate_moves()
 
 void ChessBoard::prune_moves() {
 
+	auto t = time::Timer("ChessBoard::prune_moves()");
+
+	// Prune relevant moves for pinned pieces
 	for (auto map_entry : m_pinned_pieces)
 	{
 		Position pinned_pos = map_entry.first;
@@ -323,21 +329,67 @@ void ChessBoard::prune_moves() {
 			for (int move : *pinned_moves) {
 				Position move_pos = get_pos_from_index(move);
 				if (is_colinear(move_pos, pinned_pos, pinned_by_pos)) {
-					DC_CORE_TRACE("{} is colinear to {} and {}, it is a valid move.", std::to_string(move_pos), std::to_string(pinned_pos), std::to_string(pinned_by_pos));
+					//DC_CORE_TRACE("{} is colinear to {} and {}, it is a valid move.", std::to_string(move_pos), std::to_string(pinned_pos), std::to_string(pinned_by_pos));
 					new_moves->push_back(move);
 				}
 			}
 
 			m_moves[pinned_piece] = new_moves;
-			DC_CORE_TRACE("{} now only has {} moves.", pinned_piece->get_name(), get_moves(pinned_piece)->size());
+			//DC_CORE_TRACE("{} now only has {} moves.", pinned_piece->get_name(), get_moves(pinned_piece)->size());
 		
 	}
 
 	m_pinned_pieces.clear();
 
+	// Prune relevant moves for king
+
+	std::shared_ptr<ChessPiece> kings[2];
+	MoveList threatening_moves[2];
+
+	// Get both the king and the moves that they can't go to.
+	for (auto m : m_moves) {
+
+		std::shared_ptr<ChessPiece> attacking_piece = m.first;
+		std::shared_ptr<MoveList> attacking_moves = m.second;
+		int index = static_cast<std::underlying_type<PieceColour>::type>(attacking_piece->get_colour());
+
+		if (attacking_piece->get_type() == PieceType::KING)
+			kings[index] = attacking_piece;
+		else {
+			threatening_moves[index].reserve(threatening_moves[index].size() + attacking_moves->size());
+			threatening_moves[index].insert(end(threatening_moves[index]), begin(*attacking_moves), end(*attacking_moves));
+		}
+	}
+
+
+	// Remove all the moves the kings can't go to from their move list.
+	for (int i = 0; i < 2; ++i) {
+		std::shared_ptr<ChessPiece> king = kings[i];
+		std::shared_ptr<MoveList> king_move_list = get_moves(king);
+
+		if (!king_move_list) {
+			DC_CORE_CRITICAL("{} has no moves container.", king->get_name());
+			break;
+		}
+
+		// std::set_difference needs sorted containers
+		std::sort(begin(*king_move_list), end(*king_move_list));
+		std::sort(begin(threatening_moves[1 - i]), end(threatening_moves[1 - i]));
+
+		MoveList new_king_moves;
+		std::set_difference(begin(*king_move_list),
+			end(*king_move_list),
+			begin(threatening_moves[1 - i]),
+			end(threatening_moves[1 - i]),
+			std::inserter(new_king_moves, begin(new_king_moves)));
+
+		m_moves[king] = std::make_shared<MoveList>(new_king_moves);
+
+	}
+
 }
 
-void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std::shared_ptr<MoveList> t_movelist, bool inc_targets)
+void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std::shared_ptr<MoveList> t_movelist)
 {
     const Position current_pos = get_pos_from_index(t_ind);
     const std::shared_ptr<ChessPiece> current_piece = get_piece(t_ind);
@@ -390,19 +442,21 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std
                 {
                     // Found enemy piece: Stop looking for moves & now look to see if piece is pinned.
                     t_movelist->push_back(get_index_from_pos(to_pos));
-					DC_CORE_TRACE("Checking if {} is pinned by the {}", to_piece->get_name(), current_piece->get_name());
+					//DC_CORE_TRACE("Checking if {} is pinned by the {}", to_piece->get_name(), current_piece->get_name());
                     looking_for_king = true;
                     potentially_pinned_piece = to_piece;
 					potentially_pinned_piece_pos = to_pos;
                     continue;
                 }
-                else
-                {
-                    // Found our own piece
-                    if (inc_targets)
-                        t_movelist->push_back(get_index_from_pos(to_pos));
+				else
+				{
+					// Found our own piece
+					if (m_own_piece_threats.find(current_piece) == m_own_piece_threats.end()) {
+						DC_CORE_ERROR("Moves being generated for {} but no container exists for own piece threats. Creating new container.");
+						m_own_piece_threats.insert({ current_piece, std::make_shared<MoveList>(MoveList()) });
+					}
+					m_own_piece_threats.at(current_piece)->push_back(get_index_from_pos(to_pos));
 
-                    break;
                 }
             }
         }
