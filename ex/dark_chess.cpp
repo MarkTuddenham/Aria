@@ -35,6 +35,9 @@ int main()
 	cb.move({ 4, 1 }, { 4, 2 });
 	cb.move({ 5, 7 }, { 1, 3 });
 	DC_WARN("Should be check!");
+	print_moves(cb, { 4, 0 });
+	DC_INFO(cb.to_string());
+
 	cb.move({ 3, 0 }, { 3, 1 });
 
 	DC_INFO(cb.to_string());

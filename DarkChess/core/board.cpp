@@ -320,7 +320,6 @@ void ChessBoard::prune_moves() {
 
 	auto t = time::Timer("ChessBoard::prune_moves()");
 
-	// TODO kings attacking each other -> one's moves will be removed before the others'
 
 	// Prune relevant moves for pinned pieces
 	for (auto map_entry : m_pinned_pieces)
@@ -372,6 +371,7 @@ void ChessBoard::prune_moves() {
 	}
 
 	for (int i = 0; i < 2; ++i) {
+	// TODO kings attacking each other -> one's moves will be removed before the others'
 		// Remove all the moves the kings can't go to from their move list.
 		std::shared_ptr<ChessPiece> king = kings[i];
 		std::shared_ptr<MoveList> king_move_list = get_moves(king);
@@ -396,13 +396,23 @@ void ChessBoard::prune_moves() {
 
 	}
 
-	// Remove moves for all pieces that aren't blocking moves or capturing the blocked piece.
+	// If king is in check, remove moves for all pieces that aren't blocking moves or capturing the checking piece.
 	for (auto m : m_moves)
 	{
 		std::shared_ptr<ChessPiece> attacking_piece = m.first;
 		std::shared_ptr<MoveList> attacking_moves = m.second;
+		int index = static_cast<std::underlying_type<PieceColour>::type>(attacking_piece->get_colour());
 
-		if ()
+		// The king can't block itself, and it can move out of the way.
+		if (m_is_in_check[index] && attacking_piece->get_type() != PieceType::KING) {
+			MoveList new_moves;
+			for (int m : *attacking_moves) {
+				if (std::find(begin(*m_check_blocking_moves[index]), end(*m_check_blocking_moves[index]), m) != end(*m_check_blocking_moves[index]))
+					new_moves.push_back(m);
+			}
+			DC_CORE_TRACE("{} is in check; pruning moves for {}, started with {} moves, now has {} moves.", piece_colour_string.at(attacking_piece->get_colour()), attacking_piece->get_name(), attacking_moves->size(), new_moves.size());
+			m_moves[attacking_piece] = std::make_shared<MoveList>(new_moves);
+		}
 
 
 	}
@@ -465,13 +475,17 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std
                 {
                     // Found enemy piece: Stop looking for moves & now look to see if piece is pinned.
                     t_movelist->push_back(to_ind);
-					//DC_CORE_TRACE("Checking if {} is pinned by the {}", to_piece->get_name(), current_piece->get_name());
 
 					if (to_piece->get_type() == PieceType::KING)
 					{
 						DC_CORE_TRACE("{} {} is in check by {} {}.", to_piece->get_name(), std::to_string(to_pos), current_piece->get_name(), std::to_string(current_pos));
 						int king_colour_ind = static_cast<std::underlying_type<PieceColour>::type>(to_piece->get_colour());
 						m_is_in_check[king_colour_ind] = true;
+
+
+						// Add attacking piece index, caputuring this piece will stop check.
+						check_blocking_moves.push_back(t_ind);
+
 
 						if(m_check_blocking_moves[king_colour_ind]->empty())
 							m_check_blocking_moves[king_colour_ind] = std::make_shared<MoveList>(check_blocking_moves);
