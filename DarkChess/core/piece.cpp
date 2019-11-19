@@ -28,7 +28,7 @@ char ChessPiece::get_symbol() const
 	char sym = piece_symbol_string.at(get_type());
 
 	if (get_colour() == PieceColour::WHITE)
-		sym = toupper(sym);
+		sym = (char)toupper(sym);
 
 	return sym;
 }

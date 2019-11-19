@@ -423,9 +423,6 @@ void ChessBoard::prune_moves()
 
 		m_moves[king] = std::make_shared<MoveList>(new_king_moves);
 
-		DC_CORE_TRACE("{} king moves.", king_move_list->size());
-		DC_CORE_TRACE("{} threatening moves.", threatening_moves[1 - i].size());
-		DC_CORE_TRACE("{} new king moves.", new_king_moves.size());
 	}
 
 	// If king is in check, remove moves for all pieces that aren't blocking moves
@@ -440,19 +437,22 @@ void ChessBoard::prune_moves()
 		if (m_is_in_check[index] &&
 			attacking_piece->get_type() != PieceType::KING)
 		{
+
 			MoveList new_moves;
-			for (int m : *attacking_moves)
+			for (int attacking_ind : *attacking_moves)
 			{
 				if (std::find(begin(*m_check_blocking_moves[index]),
 							  end(*m_check_blocking_moves[index]),
-							  m) != end(*m_check_blocking_moves[index]))
-					new_moves.push_back(m);
+							  attacking_ind) != end(*m_check_blocking_moves[index]))
+					new_moves.push_back(attacking_ind);
 			}
+
 			DC_CORE_TRACE(
 				"{} is in check; pruning moves for {:<12} {} moves to {} moves.",
 				piece_colour_string.at(attacking_piece->get_colour()),
 				attacking_piece->get_name(), attacking_moves->size(),
 				new_moves.size());
+
 			m_moves[attacking_piece] = std::make_shared<MoveList>(new_moves);
 		}
 	}
