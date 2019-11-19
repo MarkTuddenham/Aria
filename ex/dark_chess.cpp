@@ -62,6 +62,21 @@ int main()
 	print_moves(cb, { 3, 7 });
 
 
+	cb.move({ 4, 7 }, { 5, 7 });
+	cb.move({ 1, 0 }, { 2, 2 });
+	cb.move({ 1, 6 }, { 1, 5 });
+	cb.move({ 2, 2 }, { 3, 4 });
+	cb.move({ 2, 7 }, { 1, 6 });
+
+	print_moves(cb, { 5, 7 });
+	cb.move({ 3, 4 }, { 5, 5 });
+	print_moves(cb, { 5, 7 });
+
+
+	DC_INFO(cb.to_string());
+
+
+
 	return 0;
 }
 

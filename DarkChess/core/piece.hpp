@@ -43,6 +43,8 @@ private:
   PieceType type;
 };
 
+int get_index_from_colour(const PieceColour&);
+
 const std::map<const PieceType, const std::string> piece_type_string({
     {PieceType::PAWN, "Pawn"},
     {PieceType::KNIGHT, "Knight"},

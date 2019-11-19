@@ -39,4 +39,10 @@ std::ostream &operator<<(std::ostream &os, ChessPiece const &cp)
     return os;
 }
 
+int get_index_from_colour(const PieceColour& colour)
+{
+	return static_cast<std::underlying_type<PieceColour>::type>(colour);
+}
+
+
 } // namespace DarkChess
