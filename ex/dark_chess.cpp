@@ -1,62 +1,68 @@
 #include <DarkChess.hpp>
 #include <iostream>
 
-void print_moves(const DarkChess::ChessBoard& t_cb, const DarkChess::Position t_pos);
+void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_pos);
 
-int main()
+void app()
 {
-	DarkChess::Log::init(); // MUST, need to move to an entry point / Engine INIT
-	auto t = DarkChess::time::Timer("App");
+	PROFILE_FUNCTION();
 
 	DC_INFO("Dark Chess Version {:d}.{:d}", DarkChess_VERSION_MAJOR, DarkChess_VERSION_MINOR);
-
-#ifdef DEBUG
-	DC_INFO("App running in debug mode.");
-#endif
 
 	DarkChess::ChessBoard cb;
 
 	DC_INFO(cb.to_string());
 
-	print_moves(cb, { 2, 1 });
+	print_moves(cb, {2, 1});
 
-	cb.move({ 3, 1 }, { 3, 2 });
+	cb.move({3, 1}, {3, 2});
 	cb.move(91, 20); // Should fail
-	cb.move({ 6, 6 }, { 6, 5 });
-	cb.move({ 2, 0 }, { 5, 3 });
+	cb.move({6, 6}, {6, 5});
+	cb.move({2, 0}, {5, 3});
 
 	DC_INFO(cb.to_string());
 
 	DC_INFO("{} moves played", cb.get_num_moves());
 
-	print_moves(cb, { 3, 0 });
+	print_moves(cb, {3, 0});
 
-	cb.move({ 4, 6 }, { 4, 5 });
-	cb.move({ 4, 1 }, { 4, 2 });
-	cb.move({ 5, 7 }, { 1, 3 });
+	cb.move({4, 6}, {4, 5});
+	cb.move({4, 1}, {4, 2});
+	cb.move({5, 7}, {1, 3});
 	DC_WARN("Should be check!");
-	cb.move({ 3, 0 }, { 3, 1 });
+	cb.move({3, 0}, {3, 1});
 
 	DC_INFO(cb.to_string());
 	DC_WARN("Queen should be pinned!");
-	print_moves(cb, { 3, 1 });
-	cb.move({ 1, 3 }, { 2, 4 });
+	print_moves(cb, {3, 1});
+	cb.move({1, 3}, {2, 4});
 	DC_WARN("Queen should be un-pinned!");
-	print_moves(cb, { 3, 1 });
+	print_moves(cb, {3, 1});
 
-	cb.move({ 3, 1 }, { 1, 3 });
-	cb.move({ 2, 4 }, { 4, 2 });
+	cb.move({3, 1}, {1, 3});
+	cb.move({2, 4}, {4, 2});
 	DC_INFO(cb.to_string());
 
 	DC_WARN("Black king should no legal moves!");
-	print_moves(cb, { 4, 7 });
+	print_moves(cb, {4, 7});
+}
 
+int main()
+{
+	DarkChess::Log::init(); // MUST, need to move to an entry point / Engine INIT
+	Instrumentor::Get().BeginSession("DarkChess");
+
+	app();
+
+	Instrumentor::Get().EndSession();
 
 	return 0;
 }
 
-void print_moves(const DarkChess::ChessBoard& t_cb, const DarkChess::Position t_pos)
+void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_pos)
 {
+	PROFILE_FUNCTION();
+
 	using DarkChess::operator<<;
 
 	const std::shared_ptr<DarkChess::ChessPiece> cp = t_cb.get_piece(t_pos);
@@ -70,8 +76,8 @@ void print_moves(const DarkChess::ChessBoard& t_cb, const DarkChess::Position t_
 	if (!p_moves)
 	{
 		DC_CRITICAL("Piece ({} at {}) has no moves container!",
-			cp->get_name(),
-			std::to_string(t_pos));
+					cp->get_name(),
+					std::to_string(t_pos));
 		return;
 	}
 
@@ -85,8 +91,8 @@ void print_moves(const DarkChess::ChessBoard& t_cb, const DarkChess::Position t_
 		str += std::to_string(DarkChess::get_pos_from_index(i)) + ' ';
 
 	DC_INFO(str,
-		num_moves,
-		num_moves == 1 ? "" : "s",
-		cp->get_name(),
-		std::to_string(t_pos));
+			num_moves,
+			num_moves == 1 ? "" : "s",
+			cp->get_name(),
+			std::to_string(t_pos));
 }

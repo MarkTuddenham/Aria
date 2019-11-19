@@ -3,6 +3,8 @@ tmp/
 bin/
 _build/
 
+results.json
+
 .vs/
 .vscode/
 out/
