@@ -330,8 +330,7 @@ void ChessBoard::prune_moves()
 {
 	// Removes all the illegal moves
 
-	// TODO remove any moves that are taking the enemy king
-	// TODO use m_own_piece_threats to stop captures by kings that would pu them
+	// TODO use m_own_piece_threats to stop captures by kings that would put them
 	// in check
 
 	auto t = time::Timer("ChessBoard::prune_moves()");
@@ -457,10 +456,30 @@ void ChessBoard::prune_moves()
 		}
 	}
 
-	for (int i = 0; i < 2; ++i)
+	// remove any moves that are taking the enemy king
+	for (auto m : m_moves)
 	{
-		m_check_blocking_moves[i]->clear();
+		std::shared_ptr<ChessPiece> attacking_piece = m.first;
+		std::shared_ptr<MoveList> attacking_moves = m.second;
+		int index = get_index_from_colour(attacking_piece->get_colour());
+		
+		MoveList new_moves;
+		for (int attacking_ind : *attacking_moves)
+		{
+			//TODO can be optimised: dont need to use get_piece if we hold the positions
+			std::shared_ptr<ChessPiece> piece_under_threat = get_piece(attacking_ind);
+			if (!piece_under_threat || piece_under_threat->get_type() != PieceType::KING)
+				new_moves.push_back(attacking_ind);
+		}
+
+		m_moves[attacking_piece] = std::make_shared<MoveList>(new_moves);
+			   
 	}
+
+
+	for (int i = 0; i < 2; ++i)
+		m_check_blocking_moves[i]->clear();
+
 }
 
 void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
