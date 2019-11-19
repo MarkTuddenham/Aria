@@ -17,12 +17,16 @@ Chess with fog of war.
 
 ```bash
 mkdir -p _build/
+
 cmake -H. -B_build/
+# or
+cmake -H. -B_build/ -DCMAKE_BUILD_TYPE=Debug
+
 # The above line may not work, if it doesn't then use:
-# pushd _build/ && cmake .. && popd
+pushd _build/ && cmake .. && popd
 
 cmake --build _build/
 
-# Run an example
+# Run the example
 ./bin/DarkChessExample
 ```
