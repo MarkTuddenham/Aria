@@ -503,6 +503,7 @@ const std::shared_ptr<MoveList> ChessBoard::get_moves(Position t_pos) const
 
 std::string ChessBoard::to_string() const
 {
+	PROFILE_FUNCTION();
 
 	std::string str;
 

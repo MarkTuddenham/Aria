@@ -3,18 +3,11 @@
 
 void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_pos);
 
-int main()
+void app()
 {
-	DarkChess::Log::init(); // MUST, need to move to an entry point / Engine INIT
-	Instrumentor::Get().BeginSession("DarkChess");
-
-	PROFILE_SCOPE("App");
+	PROFILE_FUNCTION();
 
 	DC_INFO("Dark Chess Version {:d}.{:d}", DarkChess_VERSION_MAJOR, DarkChess_VERSION_MINOR);
-
-#ifdef DEBUG
-	DC_INFO("App running in debug mode.");
-#endif
 
 	DarkChess::ChessBoard cb;
 
@@ -52,7 +45,14 @@ int main()
 
 	DC_WARN("Black king should no legal moves!");
 	print_moves(cb, {4, 7});
-	print_moves(cb, {3, 7});
+}
+
+int main()
+{
+	DarkChess::Log::init(); // MUST, need to move to an entry point / Engine INIT
+	Instrumentor::Get().BeginSession("DarkChess");
+
+	app();
 
 	Instrumentor::Get().EndSession();
 

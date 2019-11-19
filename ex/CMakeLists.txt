@@ -11,7 +11,7 @@ PRIVATE
 )
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	target_compile_definitions(DarkChessExample PRIVATE "DEBUG")
+	target_compile_definitions(DarkChessExample PRIVATE "DEBUG" "PROFILING")
 endif()
 
 target_include_directories(DarkChessExample 

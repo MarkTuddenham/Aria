@@ -1,17 +1,9 @@
 //
-// Basic instrumentation profiler by Cherno
+// Based off the Cherno's Instrumentation
+// https://gist.github.com/TheCherno/31f135eea6ee729ab5f26a6908eb3a5e
+//
+// Go to chrome://tracing to view the results file.
 
-// Usage: include this header file somewhere in your code (eg. precompiled header), and then use like:
-//
-// Instrumentor::Get().BeginSession("Session Name");   // Begin session
-// {
-//     InstrumentationTimer timer("Profiled Scope Name");      // Place code like this in scopes you'd like to include in profiling
-//     // Code
-// }
-// Instrumentor::Get().EndSession();                   // End Session
-//
-// You will probably want to macro-fy this, to switch on/off easily and use things like __FUNCSIG__ for the profile name.
-//
 #pragma once
 
 #include <string>
@@ -28,13 +20,17 @@
 #endif
 
 #ifdef PROFILING
+
 #define TOKENPASTE(x, y) x##y
 #define TOKENPASTE_INDIRECT(x, y) TOKENPASTE(x, y)
 #define PROFILE_SCOPE(name) InstrumentationTimer TOKENPASTE_INDIRECT(timer, __LINE__)(name)
 #define PROFILE_FUNCTION() PROFILE_SCOPE(FUNC_NAME)
+
 #else
+
 #define PROFILE_SCOPE(name)
 #define PROFILE_FUNCTION()
+
 #endif
 
 struct ProfileResult
