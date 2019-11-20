@@ -461,7 +461,6 @@ void ChessBoard::prune_moves()
 	{
 		std::shared_ptr<ChessPiece> attacking_piece = m.first;
 		std::shared_ptr<MoveList> attacking_moves = m.second;
-		int index = get_index_from_colour(attacking_piece->get_colour());
 		
 		MoveList new_moves;
 		for (int attacking_ind : *attacking_moves)

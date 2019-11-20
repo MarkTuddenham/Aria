@@ -18,4 +18,5 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${EXECUTABLE_OUTPUT_PATH}/lib)
 
 add_subdirectory(DarkChess)
+add_subdirectory(test)
 add_subdirectory(ex)
