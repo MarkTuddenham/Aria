@@ -1,9 +1,9 @@
 #include <catch.hpp>
+#include <DarkChess.hpp>
 
-
-TEST_CASE("Board Constructor", "[matrix]")
+TEST_CASE("King oh no!1", "[check]")
 {
-	SECTION(" Normally")
+	SECTION(" Sections")
 	{
 		REQUIRE(true);
 	}

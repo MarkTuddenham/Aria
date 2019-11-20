@@ -1,21 +1,26 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(Test VERSION 0.1)
+project(Tests VERSION 0.1)
 
 # add the executable
-add_executable(Test test.cpp)
+add_executable(Tests 
+    src/test.cpp
+    src/checks.cpp
+    src/board.cpp
+)
 
-target_link_libraries(Test 
+target_link_libraries(Tests 
 PRIVATE
     DarkChess
 )
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	target_compile_definitions(DarkChessExample PRIVATE "DEBUG")
+	target_compile_definitions(Tests PRIVATE "DEBUG")
 endif()
 
-target_include_directories(DarkChessExample 
+target_include_directories(Tests 
 PRIVATE
+    "include/"
     "${PROJECT_BINARY_DIR}"
     "${PROJECT_BINARY_DIR}"
     "${LIBRARY_OUTPUT_PATH}"
