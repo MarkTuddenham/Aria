@@ -15,14 +15,13 @@ ChessBoard::ChessBoard() : ChessBoard(false) {}
 
 ChessBoard::ChessBoard(bool t_debug) : m_debug(t_debug)
 {
-  PROFILE_FUNCTION();
-  
-  for (int i = 0; i < 2; ++i)
+	PROFILE_FUNCTION();
+
+	for (int i = 0; i < 2; ++i)
 	{
 		m_check_blocking_moves[i] = std::make_shared<MoveList>();
 		m_is_in_check[i] = false;
 	}
-
 
 	auto make_piece = [&](ChessPiece cp, int i) {
 		std::shared_ptr<ChessPiece> cp_ptr = std::make_shared<ChessPiece>(cp);
@@ -68,7 +67,6 @@ ChessBoard::ChessBoard(bool t_debug) : m_debug(t_debug)
 	generate_moves();
 }
 
-
 int ChessBoard::get_num_moves() const
 {
 	return m_num_moves;
@@ -109,8 +107,8 @@ void ChessBoard::swap_turn()
 
 void ChessBoard::move(int t_from_ind, int t_to_ind)
 {
-  PROFILE_FUNCTION();
-  
+	PROFILE_FUNCTION();
+
 	m_is_in_check[0] = false;
 	m_is_in_check[1] = false;
 
@@ -140,7 +138,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 	if (!legal_moves)
 		DC_CORE_CRITICAL("Piece ({} at {}) has no moves container!",
 						 moving_piece->get_name(),
-             std::to_string(t_from_ind));
+						 std::to_string(t_from_ind));
 
 	if (!m_debug && legal_moves &&
 		std::find(begin(*legal_moves), end(*legal_moves), t_to_ind) == end(*legal_moves))
@@ -163,7 +161,6 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 		m_moves.erase(captured_piece);
 		m_own_piece_threats.erase(captured_piece);
 	}
-
 
 	// remove piece from old position
 	m_board.erase(t_from_ind);
@@ -188,7 +185,7 @@ void ChessBoard::move(Position t_from_pos, Position t_to_pos)
 void ChessBoard::generate_moves()
 {
 	PROFILE_FUNCTION();
-  
+
 	for (auto ind_piece_pair : m_board)
 	{
 		PROFILE_SCOPE("ChessBoard::generate_moves() Loop");
@@ -212,7 +209,8 @@ void ChessBoard::generate_moves()
 			{
 				const Position abs_move_pos = current_pos + rel_move_pos;
 
-				if (out_of_bounds(abs_move_pos)) continue;
+				if (out_of_bounds(abs_move_pos))
+					continue;
 
 				const std::shared_ptr<ChessPiece> possible_capture =
 					get_piece(abs_move_pos);
@@ -243,7 +241,7 @@ void ChessBoard::generate_moves()
 		switch (current_piece->get_type())
 		{
 		case PieceType::PAWN:
-    {
+		{
 			// rotation based on colour.
 			int rotation = (current_piece->get_colour() == PieceColour::WHITE) ? 1 : -1;
 
@@ -264,7 +262,8 @@ void ChessBoard::generate_moves()
 			{
 				const Position abs_move_pos = current_pos + rel_move_pos * rotation;
 
-				if (out_of_bounds(abs_move_pos)) continue;
+				if (out_of_bounds(abs_move_pos))
+					continue;
 
 				const std::shared_ptr<ChessPiece> possible_capture =
 					get_piece(abs_move_pos);
@@ -293,8 +292,8 @@ void ChessBoard::generate_moves()
 		case PieceType::BISHOP:
 		{
 			ad_infinitum(current_ind,
-                   {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}},
-						       piece_moves);
+						 {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}},
+						 piece_moves);
 			break;
 		}
 
@@ -346,14 +345,12 @@ void ChessBoard::generate_moves()
 
 void ChessBoard::prune_moves()
 {
-  PROFILE_FUNCTION();
-  
+	PROFILE_FUNCTION();
+
 	// Removes all the illegal moves
 
 	// TODO use m_own_piece_threats to stop captures by kings that would put them
 	// in check
-
-
 
 	// Prune relevant moves for pinned pieces
 	for (auto map_entry : m_pinned_pieces)
@@ -367,8 +364,8 @@ void ChessBoard::prune_moves()
 		if (!pinned_moves)
 		{
 			DC_CORE_CRITICAL("{} at {} has no moves container.",
-							         pinned_piece->get_name(),
-                       std::to_string(pinned_pos));
+							 pinned_piece->get_name(),
+							 std::to_string(pinned_pos));
 			continue;
 		}
 
@@ -378,7 +375,7 @@ void ChessBoard::prune_moves()
 		{
 			Position move_pos = get_pos_from_index(move);
 			if (is_colinear(move_pos, pinned_pos, pinned_by_pos))
-      {
+			{
 				// DC_CORE_TRACE("{} is colinear to {} and {}, it is a valid move.",
 				// std::to_string(move_pos), std::to_string(pinned_pos),
 				// std::to_string(pinned_by_pos));
@@ -387,9 +384,9 @@ void ChessBoard::prune_moves()
 		}
 
 		m_moves[pinned_piece] = new_moves;
-    
+
 		// DC_CORE_TRACE("{} now only has {} moves.",
-    // pinned_piece->get_name(),
+		// pinned_piece->get_name(),
 		// get_moves(pinned_piece)->size());
 	}
 	m_pinned_pieces.clear();
@@ -439,10 +436,10 @@ void ChessBoard::prune_moves()
 
 		MoveList new_king_moves;
 		std::set_difference(begin(*king_move_list),
-							          end(*king_move_list),
-							          begin(threatening_moves[1 - i]),
-							          end(threatening_moves[1 - i]),
-							          std::inserter(new_king_moves, begin(new_king_moves)));
+							end(*king_move_list),
+							begin(threatening_moves[1 - i]),
+							end(threatening_moves[1 - i]),
+							std::inserter(new_king_moves, begin(new_king_moves)));
 
 		m_moves[king] = std::make_shared<MoveList>(new_king_moves);
 	}
@@ -484,7 +481,7 @@ void ChessBoard::prune_moves()
 	{
 		std::shared_ptr<ChessPiece> attacking_piece = m.first;
 		std::shared_ptr<MoveList> attacking_moves = m.second;
-		
+
 		MoveList new_moves;
 		for (int attacking_ind : *attacking_moves)
 		{
@@ -495,13 +492,10 @@ void ChessBoard::prune_moves()
 		}
 
 		m_moves[attacking_piece] = std::make_shared<MoveList>(new_moves);
-			   
 	}
-
 
 	for (int i = 0; i < 2; ++i)
 		m_check_blocking_moves[i]->clear();
-
 }
 
 void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
@@ -524,6 +518,7 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
 		for (int i = 1; i < 8; ++i)
 		{
 			const Position to_pos = current_pos + dir * i;
+			int to_ind = get_index_from_pos(to_pos);
 
 			if (out_of_bounds(to_pos))
 				break;
@@ -576,7 +571,7 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
 
 						if (m_check_blocking_moves[king_colour_ind]->empty())
 							m_check_blocking_moves[king_colour_ind] =
-							std::make_shared<MoveList>(check_blocking_moves);
+								std::make_shared<MoveList>(check_blocking_moves);
 						else
 						{
 							std::sort(begin(check_blocking_moves), end(check_blocking_moves));
@@ -676,4 +671,4 @@ std::string ChessBoard::to_string() const
 	return str;
 }
 
-}  // namespace DarkChess
+} // namespace DarkChess
