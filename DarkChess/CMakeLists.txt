@@ -6,12 +6,18 @@ add_library(DarkChess
             core/board.cpp
             core/piece.cpp
             core/utils.cpp
-            core/timer.cpp
             core/log.cpp
             )
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	target_compile_definitions(DarkChess PRIVATE "DEBUG")
+	target_compile_definitions(DarkChess PRIVATE "DEBUG" "PROFILING")
+endif()
+
+
+if (WIN32)
+target_compile_definitions(DarkChess PRIVATE "PLATFORM_WINDOWS")
+elseif(UNIX)
+target_compile_definitions(DarkChess PRIVATE "PLATFORM_LINUX")
 endif()
 
 if(MSVC)

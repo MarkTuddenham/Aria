@@ -1,18 +1,13 @@
 #include <DarkChess.hpp>
 #include <iostream>
 
-void print_moves(const DarkChess::ChessBoard& t_cb, const DarkChess::Position t_pos);
+void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_pos);
 
-int main()
+void app()
 {
-	DarkChess::Log::init(); // MUST, need to move to an entry point / Engine INIT
-	auto t = DarkChess::time::Timer("App");
+	PROFILE_FUNCTION();
 
 	DC_INFO("Dark Chess Version {:d}.{:d}", DarkChess_VERSION_MAJOR, DarkChess_VERSION_MINOR);
-
-#ifdef DEBUG
-	DC_INFO("App running in debug mode.");
-#endif
 
 	DarkChess::ChessBoard cb;
 
@@ -75,13 +70,24 @@ int main()
 
 	DC_INFO(cb.to_string());
 
+}
 
+int main()
+{
+	DarkChess::Log::init(); // MUST, need to move to an entry point / Engine INIT
+	Instrumentor::Get().BeginSession("DarkChess");
+
+	app();
+
+	Instrumentor::Get().EndSession();
 
 	return 0;
 }
 
-void print_moves(const DarkChess::ChessBoard& t_cb, const DarkChess::Position t_pos)
+void print_moves(const DarkChess::ChessBoard &t_cb, const DarkChess::Position t_pos)
 {
+	PROFILE_FUNCTION();
+
 	using DarkChess::operator<<;
 
 	const std::shared_ptr<DarkChess::ChessPiece> cp = t_cb.get_piece(t_pos);
