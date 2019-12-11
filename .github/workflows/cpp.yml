@@ -29,7 +29,7 @@ jobs:
       run: cmake --build _build/
   
   test:
-    name: Build - ${{ matrix.os }}
+    name: Tests - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
