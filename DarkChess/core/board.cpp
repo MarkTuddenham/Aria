@@ -1,12 +1,12 @@
-#include <vector>
 #include <algorithm>
 #include <memory>
+#include <vector>
 
 #include "DarkChess/core/board.hpp"
-#include "DarkChess/core/piece.hpp"
-#include "DarkChess/core/utils.hpp"
 #include "DarkChess/core/instrumentation.hpp"
 #include "DarkChess/core/log.hpp"
+#include "DarkChess/core/piece.hpp"
+#include "DarkChess/core/utils.hpp"
 
 namespace DarkChess
 {
@@ -15,7 +15,14 @@ ChessBoard::ChessBoard() : ChessBoard(false) {}
 
 ChessBoard::ChessBoard(bool t_debug) : m_debug(t_debug)
 {
-	PROFILE_FUNCTION();
+  PROFILE_FUNCTION();
+  
+  for (int i = 0; i < 2; ++i)
+	{
+		m_check_blocking_moves[i] = std::make_shared<MoveList>();
+		m_is_in_check[i] = false;
+	}
+
 
 	auto make_piece = [&](ChessPiece cp, int i) {
 		std::shared_ptr<ChessPiece> cp_ptr = std::make_shared<ChessPiece>(cp);
@@ -61,6 +68,7 @@ ChessBoard::ChessBoard(bool t_debug) : m_debug(t_debug)
 	generate_moves();
 }
 
+
 int ChessBoard::get_num_moves() const
 {
 	return m_num_moves;
@@ -101,16 +109,15 @@ void ChessBoard::swap_turn()
 
 void ChessBoard::move(int t_from_ind, int t_to_ind)
 {
-	PROFILE_FUNCTION();
+  PROFILE_FUNCTION();
+  
+	m_is_in_check[0] = false;
+	m_is_in_check[1] = false;
 
-	// If in debug mode then can move any piece anywhere.
-
-	// TODO? raise errors instead of return if can't move
-
-	const std::shared_ptr<ChessPiece> p = get_piece(t_from_ind);
+	const std::shared_ptr<ChessPiece> moving_piece = get_piece(t_from_ind);
 
 	// check if there is a piece to move
-	if (!p)
+	if (!moving_piece)
 	{
 		DC_CORE_WARN("Invalid move {} to {}: No Piece.",
 					 std::to_string(get_pos_from_index(t_from_ind)),
@@ -120,7 +127,8 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 
 	// check piece is of the correct colour
 	// If we're debugging then allow out of turn moves
-	if (!m_debug && p->get_colour() != m_turn)
+	if (!m_debug && moving_piece->get_colour() != m_turn)
+
 	{
 		DC_CORE_WARN("Invalid move {} to {}: Not your turn.",
 					 std::to_string(get_pos_from_index(t_from_ind)),
@@ -128,13 +136,15 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 		return;
 	}
 
-	std::shared_ptr<MoveList> legal_moves = get_moves(p);
+	std::shared_ptr<MoveList> legal_moves = get_moves(moving_piece);
 	if (!legal_moves)
 		DC_CORE_CRITICAL("Piece ({} at {}) has no moves container!",
-						 p->get_name(),
-						 std::to_string(t_from_ind));
+						 moving_piece->get_name(),
+             std::to_string(t_from_ind));
 
-	if (!m_debug && legal_moves && std::find(begin(*legal_moves), end(*legal_moves), t_to_ind) == end(*legal_moves))
+	if (!m_debug && legal_moves &&
+		std::find(begin(*legal_moves), end(*legal_moves), t_to_ind) == end(*legal_moves))
+
 	{
 		DC_CORE_WARN("Invalid move {} to {}: Not a legal move.",
 					 std::to_string(get_pos_from_index(t_from_ind)),
@@ -143,7 +153,17 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 	}
 
 	// Add piece in its new place
+	// This will remove the taken piece from m_board
+	// so we still need to remove it from the other containers
+	std::shared_ptr<ChessPiece> captured_piece = get_piece(t_to_ind);
 	m_board[t_to_ind] = m_board[t_from_ind];
+
+	if (captured_piece)
+	{
+		m_moves.erase(captured_piece);
+		m_own_piece_threats.erase(captured_piece);
+	}
+
 
 	// remove piece from old position
 	m_board.erase(t_from_ind);
@@ -152,8 +172,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 	swap_turn();
 	++m_num_moves;
 
-	DC_CORE_INFO("Move: {} from {} to {}",
-				 p->get_name(),
+	DC_CORE_INFO("Move: {} from {} to {}", moving_piece->get_name(),
 				 std::to_string(get_pos_from_index(t_from_ind)),
 				 std::to_string(get_pos_from_index(t_to_ind)));
 
@@ -168,8 +187,8 @@ void ChessBoard::move(Position t_from_pos, Position t_to_pos)
 
 void ChessBoard::generate_moves()
 {
-
 	PROFILE_FUNCTION();
+  
 	for (auto ind_piece_pair : m_board)
 	{
 		PROFILE_SCOPE("ChessBoard::generate_moves() Loop");
@@ -180,7 +199,8 @@ void ChessBoard::generate_moves()
 
 		if (!current_piece)
 		{
-			DC_CORE_CRITICAL("Hanging piece pointer ({}) in BoardMap!", std::to_string(current_pos));
+			DC_CORE_CRITICAL("Hanging piece pointer ({}) in BoardMap!",
+							 std::to_string(current_pos));
 			return;
 		}
 
@@ -192,15 +212,30 @@ void ChessBoard::generate_moves()
 			{
 				const Position abs_move_pos = current_pos + rel_move_pos;
 
-				if (out_of_bounds(abs_move_pos))
-					continue;
+				if (out_of_bounds(abs_move_pos)) continue;
 
-				const std::shared_ptr<ChessPiece> possible_capture = get_piece(abs_move_pos);
+				const std::shared_ptr<ChessPiece> possible_capture =
+					get_piece(abs_move_pos);
 
-				// If there is not a piece, or the piece is capturable
-				if (!possible_capture || (possible_capture && possible_capture->get_colour() != current_piece->get_colour()))
+				// If there is no piece then the move is avaliable.
+				if (!possible_capture)
 				{
 					piece_moves->push_back(get_index_from_pos(abs_move_pos));
+				}
+				else
+				{
+					bool is_king = possible_capture->get_type() == PieceType::KING;
+					bool is_enemy_piece =
+						possible_capture->get_colour() != current_piece->get_colour();
+
+					// If there is a piece and it is capturable the move is valid too.
+					if (is_enemy_piece)
+					{
+						piece_moves->push_back(get_index_from_pos(abs_move_pos));
+						if (is_king)
+							m_is_in_check[get_index_from_colour(
+								possible_capture->get_colour())] = true;
+					}
 				}
 			}
 		};
@@ -208,10 +243,8 @@ void ChessBoard::generate_moves()
 		switch (current_piece->get_type())
 		{
 		case PieceType::PAWN:
-		{
-			// PROFILE_SCOPE("ChessBoard::generate_moves() PAWN");
-
-			//rotation based on colour -> only applies to pawns.
+    {
+			// rotation based on colour.
 			int rotation = (current_piece->get_colour() == PieceColour::WHITE) ? 1 : -1;
 
 			// Check forward move
@@ -219,7 +252,8 @@ void ChessBoard::generate_moves()
 				const Position rel_move_pos = {0, 1};
 				const Position abs_move_pos = current_pos + rel_move_pos * rotation;
 
-				const std::shared_ptr<ChessPiece> in_front_piece = get_piece(abs_move_pos);
+				const std::shared_ptr<ChessPiece> in_front_piece =
+					get_piece(abs_move_pos);
 
 				if (!in_front_piece && !out_of_bounds(abs_move_pos))
 					piece_moves->push_back(get_index_from_pos(abs_move_pos));
@@ -230,12 +264,13 @@ void ChessBoard::generate_moves()
 			{
 				const Position abs_move_pos = current_pos + rel_move_pos * rotation;
 
-				if (out_of_bounds(abs_move_pos))
-					continue;
+				if (out_of_bounds(abs_move_pos)) continue;
 
-				const std::shared_ptr<ChessPiece> possible_capture = get_piece(abs_move_pos);
+				const std::shared_ptr<ChessPiece> possible_capture =
+					get_piece(abs_move_pos);
 
-				if (possible_capture && possible_capture->get_colour() != current_piece->get_colour())
+				if (possible_capture &&
+					possible_capture->get_colour() != current_piece->get_colour())
 					piece_moves->push_back(get_index_from_pos(abs_move_pos));
 			}
 
@@ -244,8 +279,6 @@ void ChessBoard::generate_moves()
 
 		case PieceType::KNIGHT:
 		{
-			// PROFILE_SCOPE("ChessBoard::generate_moves() KNIGHT");
-
 			add_moves_from_relative({{1, 2},
 									 {2, 1},
 									 {-1, 2},
@@ -259,18 +292,14 @@ void ChessBoard::generate_moves()
 
 		case PieceType::BISHOP:
 		{
-			// PROFILE_SCOPE("ChessBoard::generate_moves() BISHOP");
-
 			ad_infinitum(current_ind,
-						 {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}},
-						 piece_moves);
+                   {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}},
+						       piece_moves);
 			break;
 		}
 
 		case PieceType::ROOK:
 		{
-			// PROFILE_SCOPE("ChessBoard::generate_moves() ROOK");
-
 			ad_infinitum(current_ind,
 						 {{0, 1}, {1, 0}, {0, -1}, {-1, 0}},
 						 piece_moves);
@@ -279,8 +308,6 @@ void ChessBoard::generate_moves()
 
 		case PieceType::QUEEN:
 		{
-			// PROFILE_SCOPE("ChessBoard::generate_moves() QUEEN");
-
 			ad_infinitum(current_ind,
 						 {{1, 1},
 						  {1, -1},
@@ -296,8 +323,6 @@ void ChessBoard::generate_moves()
 
 		case PieceType::KING:
 		{
-			// PROFILE_SCOPE("ChessBoard::generate_moves() KING");
-
 			add_moves_from_relative({{1, 1},
 									 {1, -1},
 									 {-1, 1},
@@ -306,7 +331,6 @@ void ChessBoard::generate_moves()
 									 {1, 0},
 									 {0, -1},
 									 {-1, 0}});
-
 			break;
 		}
 
@@ -322,8 +346,14 @@ void ChessBoard::generate_moves()
 
 void ChessBoard::prune_moves()
 {
+  PROFILE_FUNCTION();
+  
+	// Removes all the illegal moves
 
-	PROFILE_FUNCTION();
+	// TODO use m_own_piece_threats to stop captures by kings that would put them
+	// in check
+
+
 
 	// Prune relevant moves for pinned pieces
 	for (auto map_entry : m_pinned_pieces)
@@ -336,7 +366,9 @@ void ChessBoard::prune_moves()
 
 		if (!pinned_moves)
 		{
-			DC_CORE_CRITICAL("{} at {} has no moves container.", pinned_piece->get_name(), std::to_string(pinned_pos));
+			DC_CORE_CRITICAL("{} at {} has no moves container.",
+							         pinned_piece->get_name(),
+                       std::to_string(pinned_pos));
 			continue;
 		}
 
@@ -346,43 +378,52 @@ void ChessBoard::prune_moves()
 		{
 			Position move_pos = get_pos_from_index(move);
 			if (is_colinear(move_pos, pinned_pos, pinned_by_pos))
-			{
-				//DC_CORE_TRACE("{} is colinear to {} and {}, it is a valid move.", std::to_string(move_pos), std::to_string(pinned_pos), std::to_string(pinned_by_pos));
+      {
+				// DC_CORE_TRACE("{} is colinear to {} and {}, it is a valid move.",
+				// std::to_string(move_pos), std::to_string(pinned_pos),
+				// std::to_string(pinned_by_pos));
 				new_moves->push_back(move);
 			}
 		}
 
 		m_moves[pinned_piece] = new_moves;
-		//DC_CORE_TRACE("{} now only has {} moves.", pinned_piece->get_name(), get_moves(pinned_piece)->size());
+    
+		// DC_CORE_TRACE("{} now only has {} moves.",
+    // pinned_piece->get_name(),
+		// get_moves(pinned_piece)->size());
 	}
-
 	m_pinned_pieces.clear();
 
 	// Prune relevant moves for king
-
 	std::shared_ptr<ChessPiece> kings[2];
 	MoveList threatening_moves[2];
 
-	// Get both the king and the moves that they can't go to.
 	for (auto m : m_moves)
 	{
-
+		// Get both the king and the moves that they can't go to.
 		std::shared_ptr<ChessPiece> attacking_piece = m.first;
 		std::shared_ptr<MoveList> attacking_moves = m.second;
-		int index = static_cast<std::underlying_type<PieceColour>::type>(attacking_piece->get_colour());
+		int index = get_index_from_colour(attacking_piece->get_colour());
 
 		if (attacking_piece->get_type() == PieceType::KING)
 			kings[index] = attacking_piece;
 		else
 		{
+
 			threatening_moves[index].reserve(threatening_moves[index].size() + attacking_moves->size());
-			threatening_moves[index].insert(end(threatening_moves[index]), begin(*attacking_moves), end(*attacking_moves));
+			threatening_moves[index].insert(end(threatening_moves[index]),
+											begin(*attacking_moves),
+											end(*attacking_moves));
 		}
 	}
 
-	// Remove all the moves the kings can't go to from their move list.
 	for (int i = 0; i < 2; ++i)
 	{
+		// TODO kings attacking each other -> one's moves will be removed before the
+		// others'
+		// ^^ I think it should be covered as we save the threats first.
+
+		// Remove all the moves the kings can't go to from their move list.
 		std::shared_ptr<ChessPiece> king = kings[i];
 		std::shared_ptr<MoveList> king_move_list = get_moves(king);
 
@@ -398,16 +439,73 @@ void ChessBoard::prune_moves()
 
 		MoveList new_king_moves;
 		std::set_difference(begin(*king_move_list),
-							end(*king_move_list),
-							begin(threatening_moves[1 - i]),
-							end(threatening_moves[1 - i]),
-							std::inserter(new_king_moves, begin(new_king_moves)));
+							          end(*king_move_list),
+							          begin(threatening_moves[1 - i]),
+							          end(threatening_moves[1 - i]),
+							          std::inserter(new_king_moves, begin(new_king_moves)));
 
 		m_moves[king] = std::make_shared<MoveList>(new_king_moves);
 	}
+
+	// If king is in check, remove moves for all pieces that aren't blocking moves
+	// or capturing the checking piece.
+	for (auto m : m_moves)
+	{
+		std::shared_ptr<ChessPiece> attacking_piece = m.first;
+		std::shared_ptr<MoveList> attacking_moves = m.second;
+		int index = get_index_from_colour(attacking_piece->get_colour());
+
+		// The king can't block itself, and it can move out of the way.
+		if (m_is_in_check[index] &&
+			attacking_piece->get_type() != PieceType::KING)
+		{
+
+			MoveList new_moves;
+			for (int attacking_ind : *attacking_moves)
+			{
+				if (std::find(begin(*m_check_blocking_moves[index]),
+							  end(*m_check_blocking_moves[index]),
+							  attacking_ind) != end(*m_check_blocking_moves[index]))
+					new_moves.push_back(attacking_ind);
+			}
+
+			DC_CORE_TRACE(
+				"{} is in check; pruning moves for {:<12} {} moves to {} moves.",
+				piece_colour_string.at(attacking_piece->get_colour()),
+				attacking_piece->get_name(), attacking_moves->size(),
+				new_moves.size());
+
+			m_moves[attacking_piece] = std::make_shared<MoveList>(new_moves);
+		}
+	}
+
+	// remove any moves that are taking the enemy king
+	for (auto m : m_moves)
+	{
+		std::shared_ptr<ChessPiece> attacking_piece = m.first;
+		std::shared_ptr<MoveList> attacking_moves = m.second;
+		
+		MoveList new_moves;
+		for (int attacking_ind : *attacking_moves)
+		{
+			//TODO can be optimised: dont need to use get_piece if we hold the positions
+			std::shared_ptr<ChessPiece> piece_under_threat = get_piece(attacking_ind);
+			if (!piece_under_threat || piece_under_threat->get_type() != PieceType::KING)
+				new_moves.push_back(attacking_ind);
+		}
+
+		m_moves[attacking_piece] = std::make_shared<MoveList>(new_moves);
+			   
+	}
+
+
+	for (int i = 0; i < 2; ++i)
+		m_check_blocking_moves[i]->clear();
+
 }
 
-void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std::shared_ptr<MoveList> t_movelist)
+void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
+							  std::shared_ptr<MoveList> t_movelist)
 {
 	PROFILE_FUNCTION();
 
@@ -417,8 +515,9 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std
 	for (Position dir : t_directions)
 	{
 		bool looking_for_king = false;
-		std::shared_ptr<ChessPiece> potentially_pinned_piece = nullptr;
+		std::shared_ptr<ChessPiece> potentially_pinned_piece;
 		Position potentially_pinned_piece_pos;
+		std::vector<int> check_blocking_moves;
 
 		// There can only be a max of 7 iterations before going out of bounds
 		// start at 1 since 0 will be the current position.
@@ -450,32 +549,75 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std
 			}
 			else
 			{
-
 				if (!to_piece)
 				{
 					// Found no piece: Keep looking in this direction.
-					t_movelist->push_back(get_index_from_pos(to_pos));
+					t_movelist->push_back(to_ind);
+					check_blocking_moves.push_back(to_ind);
+
 					continue;
 				}
 				else if (is_enemy_piece)
 				{
-					// Found enemy piece: Stop looking for moves & now look to see if piece is pinned.
-					t_movelist->push_back(get_index_from_pos(to_pos));
-					//DC_CORE_TRACE("Checking if {} is pinned by the {}", to_piece->get_name(), current_piece->get_name());
-					looking_for_king = true;
-					potentially_pinned_piece = to_piece;
-					potentially_pinned_piece_pos = to_pos;
-					continue;
+					// Found enemy piece: Stop looking for moves & now look to see if
+					// piece is pinned.
+					t_movelist->push_back(to_ind);
+
+					if (to_piece->get_type() == PieceType::KING)
+					{
+						DC_CORE_TRACE("{} {} is in check by {} {}.", to_piece->get_name(),
+									  std::to_string(to_pos), current_piece->get_name(),
+									  std::to_string(current_pos));
+						int king_colour_ind = get_index_from_colour(to_piece->get_colour());
+						m_is_in_check[king_colour_ind] = true;
+
+						// Add attacking piece index, caputuring this piece will stop check.
+						check_blocking_moves.push_back(t_ind);
+
+						if (m_check_blocking_moves[king_colour_ind]->empty())
+							m_check_blocking_moves[king_colour_ind] =
+							std::make_shared<MoveList>(check_blocking_moves);
+						else
+						{
+							std::sort(begin(check_blocking_moves), end(check_blocking_moves));
+							std::sort(begin(*m_check_blocking_moves[king_colour_ind]),
+									  end(*m_check_blocking_moves[king_colour_ind]));
+
+							std::vector<int> new_check_blocking_moves;
+							std::set_difference(
+								begin(*m_check_blocking_moves[king_colour_ind]),
+								end(*m_check_blocking_moves[king_colour_ind]),
+								begin(check_blocking_moves), end(check_blocking_moves),
+								std::inserter(new_check_blocking_moves,
+											  begin(new_check_blocking_moves)));
+
+							m_check_blocking_moves[king_colour_ind] =
+								std::make_shared<MoveList>(new_check_blocking_moves);
+						}
+
+						break;
+					}
+					else
+					{
+						looking_for_king = true;
+						potentially_pinned_piece = to_piece;
+						potentially_pinned_piece_pos = to_pos;
+						continue;
+					}
 				}
 				else
 				{
 					// Found our own piece
-					if (m_own_piece_threats.find(current_piece) == m_own_piece_threats.end())
+					if (m_own_piece_threats.find(current_piece) ==
+						m_own_piece_threats.end())
 					{
-						DC_CORE_ERROR("Moves being generated for {} but no container exists for own piece threats. Creating new container.");
-						m_own_piece_threats.insert({current_piece, std::make_shared<MoveList>(MoveList())});
+						DC_CORE_ERROR(
+							"Moves being generated for {} but no container exists for own "
+							"piece threats. Creating new container.");
+						m_own_piece_threats.insert(
+							{current_piece, std::make_shared<MoveList>(MoveList())});
 					}
-					m_own_piece_threats.at(current_piece)->push_back(get_index_from_pos(to_pos));
+					m_own_piece_threats.at(current_piece)->push_back(to_ind);
 					break;
 				}
 			}
@@ -483,7 +625,8 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions, std
 	}
 }
 
-const std::shared_ptr<MoveList> ChessBoard::get_moves(std::shared_ptr<ChessPiece> t_cp) const
+const std::shared_ptr<MoveList> ChessBoard::get_moves(
+	std::shared_ptr<ChessPiece> t_cp) const
 {
 	if (!t_cp || m_moves.find(t_cp) == m_moves.end())
 		return nullptr;
@@ -506,7 +649,6 @@ std::string ChessBoard::to_string() const
 	PROFILE_FUNCTION();
 
 	std::string str;
-
 	str += "\n  ---------------------------------\n";
 
 	for (int y = 7; y >= 0; y--)
@@ -534,4 +676,4 @@ std::string ChessBoard::to_string() const
 	return str;
 }
 
-} // namespace DarkChess
+}  // namespace DarkChess
