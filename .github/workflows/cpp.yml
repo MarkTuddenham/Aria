@@ -46,4 +46,8 @@ jobs:
     - name: build
       run: cmake --build _build/
     - name: run tests
+	  if: runner.os == Windows
+      run: "./bin/Tests.exe"
+	- name: run tests
+	  if: runner.os != Windows
       run: ./bin/Tests
