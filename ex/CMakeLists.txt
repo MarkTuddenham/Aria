@@ -10,9 +10,19 @@ PRIVATE
     DarkChess
 )
 
+set(COMPILE_OPTIONS "")
+
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	target_compile_definitions(DarkChessExample PRIVATE "DEBUG" "PROFILING")
+    list(APPEND COMPILE_OPTIONS "DEBUG" "PROFILING")
 endif()
+
+if (WIN32)
+    list(APPEND COMPILE_OPTIONS "PLATFORM_WINDOWS")
+elseif(UNIX)
+    list(APPEND COMPILE_OPTIONS "PLATFORM_LINUX")
+endif()
+
+target_compile_definitions(DarkChessExample PRIVATE ${COMPILE_OPTIONS})
 
 target_include_directories(DarkChessExample 
 PRIVATE
