@@ -7,18 +7,22 @@ add_library(DarkChess
             core/piece.cpp
             core/utils.cpp
             core/log.cpp
-            )
+			)
+			
+set(COMPILE_OPTIONS "")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	target_compile_definitions(DarkChess PRIVATE "DEBUG" "PROFILING")
+	list(APPEND COMPILE_OPTIONS "DEBUG" "PROFILING")
 endif()
 
 
 if (WIN32)
-target_compile_definitions(DarkChess PRIVATE "PLATFORM_WINDOWS")
+	list(APPEND COMPILE_OPTIONS "PLATFORM_WINDOWS")
 elseif(UNIX)
-target_compile_definitions(DarkChess PRIVATE "PLATFORM_LINUX")
+	list(APPEND COMPILE_OPTIONS "PLATFORM_LINUX")
 endif()
+
+target_compile_definitions(DarkChess PRIVATE ${COMPILE_OPTIONS})
 
 if(MSVC)
 	target_compile_options(DarkChess
@@ -34,6 +38,10 @@ else()
 		"-Wpedantic"
 		"-Wshadow"
 		"-Wnon-virtual-dtor"
+		"-Wnull-dereference"
+		"-Wold-style-cast"
+		"-Wuseless-cast"
+		"-Wformat=2"
 	)
 endif()
 
