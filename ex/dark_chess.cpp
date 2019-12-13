@@ -16,6 +16,7 @@ void app()
     print_moves(cb, {2, 1});
 
     cb.move({3, 1}, {3, 2});
+    DC_WARN("Expecting move failure.");
     cb.move(91, 20); // Should fail
     cb.move({6, 6}, {6, 5});
     cb.move({2, 0}, {5, 3});
@@ -56,7 +57,6 @@ void app()
     print_moves(cb, {6, 7});
     print_moves(cb, {3, 7});
 
-
     cb.move({4, 7}, {5, 7});
     cb.move({1, 0}, {2, 2});
     cb.move({1, 6}, {1, 5});
@@ -67,9 +67,13 @@ void app()
     cb.move({3, 4}, {5, 5});
     print_moves(cb, {5, 7});
 
+    cb.move({6, 7}, {7, 5});
+    cb.move({5, 3}, {4, 4});
+    cb.move({5, 7}, {4, 6});
+    print_moves(cb, {4, 6});
 
     DC_INFO(cb.to_string());
-
+    DC_INFO("{} moves played", cb.get_num_moves());
 }
 
 int main()

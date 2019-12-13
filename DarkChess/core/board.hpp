@@ -46,8 +46,12 @@ private:
 
     void swap_turn();
     void generate_moves();
-    void prune_moves();
     void ad_infinitum(int, std::vector<Position>, std::shared_ptr<MoveList>);
+
+    void prune_moves();
+    void prune_pinned_pieces();
+    void prune_king_moves();
+    void prune_king_stays_in_check();
 };
 
 } // namespace DarkChess
