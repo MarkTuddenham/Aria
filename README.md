@@ -27,6 +27,9 @@ pushd _build/ && cmake .. && popd
 
 cmake --build _build/
 
+# Run the tests
+./bin/Tests
+
 # Run the example
 ./bin/DarkChessExample
 ```

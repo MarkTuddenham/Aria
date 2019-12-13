@@ -475,7 +475,7 @@ void ChessBoard::prune_moves()
             m_moves[attacking_piece] = std::make_shared<MoveList>(new_moves);
         }
     }
-
+    
     // remove any moves that are taking the enemy king
     for (auto m : m_moves)
     {
