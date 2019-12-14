@@ -89,7 +89,7 @@ PieceColour ChessBoard::get_turn() const
     return m_turn;
 }
 
-const std::string ChessBoard::get_turn_name() const
+const std::string &ChessBoard::get_turn_name() const
 {
     return piece_colour_string.at(m_turn);
 }
@@ -107,7 +107,7 @@ const std::shared_ptr<ChessPiece> ChessBoard::get_piece(int t_ind) const
         return m_board.at(t_ind);
 }
 
-const std::shared_ptr<ChessPiece> ChessBoard::get_piece(Position t_pos) const
+const std::shared_ptr<ChessPiece> ChessBoard::get_piece(const Position &t_pos) const
 {
     return get_piece(get_index_from_pos(t_pos));
 }
@@ -650,7 +650,7 @@ const std::shared_ptr<MoveList> ChessBoard::get_moves(int t_ind) const
     return get_moves(get_piece(t_ind));
 }
 
-const std::shared_ptr<MoveList> ChessBoard::get_moves(Position t_pos) const
+const std::shared_ptr<MoveList> ChessBoard::get_moves(const Position &t_pos) const
 {
     return get_moves(get_index_from_pos(t_pos));
 }

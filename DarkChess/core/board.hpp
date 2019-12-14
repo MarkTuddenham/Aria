@@ -16,23 +16,21 @@ class ChessBoard
 public:
     int get_num_moves() const;
     PieceColour get_turn() const;
-    const std::string get_turn_name() const;
+    const std::string &get_turn_name() const;
 
     const std::unique_ptr<BoardMap> get_pieces() const;
     const std::shared_ptr<ChessPiece> get_piece(int) const;
-    const std::shared_ptr<ChessPiece> get_piece(Position) const;
+    const std::shared_ptr<ChessPiece> get_piece(const Position &) const;
 
     const std::shared_ptr<MoveList> get_moves(std::shared_ptr<ChessPiece>) const;
     const std::shared_ptr<MoveList> get_moves(int) const;
-    const std::shared_ptr<MoveList> get_moves(Position) const;
+    const std::shared_ptr<MoveList> get_moves(const Position &) const;
 
     std::string to_string() const;
 
     ChessBoard();
     void move(int, int);
     void move(Position, Position);
-
-    friend ChessBoard chess_board_from_fen(const std::string &);
 
 private:
     BoardMap m_board;
@@ -61,6 +59,8 @@ private:
     void prune_pinned_pieces();
     void prune_king_moves();
     void prune_king_stays_in_check();
+
+    friend class FEN;
 };
 
 } // namespace DarkChess
