@@ -5,8 +5,9 @@ project(Tests VERSION 0.1)
 # add the executable
 add_executable(Tests 
     src/test.cpp
-    src/checks.cpp
     src/board.cpp
+    src/checks.cpp
+    src/fen.cpp
 )
 
 target_link_libraries(Tests 

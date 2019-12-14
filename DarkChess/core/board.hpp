@@ -29,9 +29,10 @@ public:
     std::string to_string() const;
 
     ChessBoard();
-    ChessBoard(bool);
     void move(int, int);
     void move(Position, Position);
+
+    friend ChessBoard chess_board_from_fen(const std::string &);
 
 private:
     BoardMap m_board;
@@ -48,7 +49,11 @@ private:
     int m_num_moves = 0;
     bool m_debug = false;
 
+    ChessBoard(bool);
+    void add_piece_to_board(const ChessPiece &, int);
+    void set_start_configuration();
     void swap_turn();
+
     void generate_moves();
     void ad_infinitum(int, std::vector<Position>, std::shared_ptr<MoveList>);
 

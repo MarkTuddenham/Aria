@@ -4,9 +4,10 @@ configure_file(config.hpp.in config.hpp)
 
 add_library(DarkChess 
             core/board.cpp
+            core/fen.cpp
+            core/log.cpp
             core/piece.cpp
             core/utils.cpp
-            core/log.cpp
             )
             
 set(COMPILE_OPTIONS "")

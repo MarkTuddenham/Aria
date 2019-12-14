@@ -3,7 +3,6 @@
 
 TEST_CASE("Board Constructor", "[board]")
 {
-    DarkChess::Log::init();
     DarkChess::ChessBoard cb;
 
     REQUIRE(cb.to_string() != "");

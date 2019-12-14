@@ -5,10 +5,11 @@
 #include "DarkChess/config.hpp"
 
 #include "DarkChess/core/board.hpp"
-#include "DarkChess/core/piece.hpp"
-#include "DarkChess/core/utils.hpp"
+#include "DarkChess/core/fen.hpp"
 #include "DarkChess/core/instrumentation.hpp"
 #include "DarkChess/core/log.hpp"
+#include "DarkChess/core/piece.hpp"
+#include "DarkChess/core/utils.hpp"
 
 #ifdef DEBUG
 // Client Logging Macros

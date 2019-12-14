@@ -11,9 +11,9 @@
 namespace DarkChess
 {
 
-ChessBoard::ChessBoard() : ChessBoard(false) {}
+ChessBoard::ChessBoard() : ChessBoard(true) {}
 
-ChessBoard::ChessBoard(bool t_debug) : m_debug(t_debug)
+ChessBoard::ChessBoard(bool init_pieces)
 {
     PROFILE_FUNCTION();
 
@@ -21,53 +21,62 @@ ChessBoard::ChessBoard(bool t_debug) : m_debug(t_debug)
     {
         m_check_blocking_moves[i] = nullptr;
         m_is_in_check[i] = false;
+        m_kings[i] = nullptr;
     }
 
-    auto make_piece = [&](ChessPiece cp, int i) {
-        std::shared_ptr<ChessPiece> cp_ptr = std::make_shared<ChessPiece>(cp);
-        m_board.insert({i, cp_ptr});
-        m_moves.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
-        m_own_piece_threats.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
+    if (init_pieces)
+    {
+        set_start_configuration();
+        generate_moves();
+    }
+}
 
-        if (cp.get_type() == PieceType::KING)
-            m_kings[get_index_from_colour(cp.get_colour())] = cp_ptr;
-    };
+void ChessBoard::add_piece_to_board(const ChessPiece &cp, int ind)
+{
+    std::shared_ptr<ChessPiece> cp_ptr = std::make_shared<ChessPiece>(cp);
+    m_board.insert({ind, cp_ptr});
+    m_moves.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
+    m_own_piece_threats.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
 
+    if (cp.get_type() == PieceType::KING)
+        m_kings[get_index_from_colour(cp.get_colour())] = cp_ptr;
+}
+
+void ChessBoard::set_start_configuration()
+{
     // White pawns (1,0) -> (1,7)
     for (int i = 8; i < 16; ++i)
-        make_piece(ChessPiece(PieceColour::WHITE, PieceType::PAWN), i);
+        add_piece_to_board(ChessPiece(PieceColour::WHITE, PieceType::PAWN), i);
 
     // Black pawns (6,0) -> (6,7)
     for (int i = 48; i < 56; ++i)
-        make_piece(ChessPiece(PieceColour::BLACK, PieceType::PAWN), i);
+        add_piece_to_board(ChessPiece(PieceColour::BLACK, PieceType::PAWN), i);
 
     // Knights
-    make_piece(ChessPiece(PieceColour::WHITE, PieceType::KNIGHT), 1);
-    make_piece(ChessPiece(PieceColour::WHITE, PieceType::KNIGHT), 6);
-    make_piece(ChessPiece(PieceColour::BLACK, PieceType::KNIGHT), 57);
-    make_piece(ChessPiece(PieceColour::BLACK, PieceType::KNIGHT), 62);
+    add_piece_to_board(ChessPiece(PieceColour::WHITE, PieceType::KNIGHT), 1);
+    add_piece_to_board(ChessPiece(PieceColour::WHITE, PieceType::KNIGHT), 6);
+    add_piece_to_board(ChessPiece(PieceColour::BLACK, PieceType::KNIGHT), 57);
+    add_piece_to_board(ChessPiece(PieceColour::BLACK, PieceType::KNIGHT), 62);
 
     // Bishops
-    make_piece(ChessPiece(PieceColour::WHITE, PieceType::BISHOP), 2);
-    make_piece(ChessPiece(PieceColour::WHITE, PieceType::BISHOP), 5);
-    make_piece(ChessPiece(PieceColour::BLACK, PieceType::BISHOP), 58);
-    make_piece(ChessPiece(PieceColour::BLACK, PieceType::BISHOP), 61);
+    add_piece_to_board(ChessPiece(PieceColour::WHITE, PieceType::BISHOP), 2);
+    add_piece_to_board(ChessPiece(PieceColour::WHITE, PieceType::BISHOP), 5);
+    add_piece_to_board(ChessPiece(PieceColour::BLACK, PieceType::BISHOP), 58);
+    add_piece_to_board(ChessPiece(PieceColour::BLACK, PieceType::BISHOP), 61);
 
     // Rooks
-    make_piece(ChessPiece(PieceColour::WHITE, PieceType::ROOK), 0);
-    make_piece(ChessPiece(PieceColour::WHITE, PieceType::ROOK), 7);
-    make_piece(ChessPiece(PieceColour::BLACK, PieceType::ROOK), 56);
-    make_piece(ChessPiece(PieceColour::BLACK, PieceType::ROOK), 63);
+    add_piece_to_board(ChessPiece(PieceColour::WHITE, PieceType::ROOK), 0);
+    add_piece_to_board(ChessPiece(PieceColour::WHITE, PieceType::ROOK), 7);
+    add_piece_to_board(ChessPiece(PieceColour::BLACK, PieceType::ROOK), 56);
+    add_piece_to_board(ChessPiece(PieceColour::BLACK, PieceType::ROOK), 63);
 
     // Queens
-    make_piece(ChessPiece(PieceColour::WHITE, PieceType::QUEEN), 3);
-    make_piece(ChessPiece(PieceColour::BLACK, PieceType::QUEEN), 59);
+    add_piece_to_board(ChessPiece(PieceColour::WHITE, PieceType::QUEEN), 3);
+    add_piece_to_board(ChessPiece(PieceColour::BLACK, PieceType::QUEEN), 59);
 
     // Kings
-    make_piece(ChessPiece(PieceColour::WHITE, PieceType::KING), 4);
-    make_piece(ChessPiece(PieceColour::BLACK, PieceType::KING), 60);
-
-    generate_moves();
+    add_piece_to_board(ChessPiece(PieceColour::WHITE, PieceType::KING), 4);
+    add_piece_to_board(ChessPiece(PieceColour::BLACK, PieceType::KING), 60);
 }
 
 int ChessBoard::get_num_moves() const
@@ -127,9 +136,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     }
 
     // check piece is of the correct colour
-    // If we're debugging then allow out of turn moves
-    if (!m_debug && moving_piece->get_colour() != m_turn)
-
+    if (moving_piece->get_colour() != m_turn)
     {
         DC_CORE_WARN("Invalid move {} to {}: Not your turn.",
                      std::to_string(get_pos_from_index(t_from_ind)),
@@ -143,9 +150,8 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
                          moving_piece->get_name(),
                          std::to_string(t_from_ind));
 
-    if (!m_debug && legal_moves &&
+    if (legal_moves &&
         std::find(begin(*legal_moves), end(*legal_moves), t_to_ind) == end(*legal_moves))
-
     {
         DC_CORE_WARN("Invalid move {} to {}: Not a legal move.",
                      std::to_string(get_pos_from_index(t_from_ind)),
@@ -559,6 +565,14 @@ void ChessBoard::prune_king_moves()
 
     for (int i = 0; i < 2; ++i)
     {
+
+        if (!m_kings[i])
+        {
+            //TODO better error message.
+            DC_CORE_ERROR("{} king does not exist.", PieceColour(i));
+            continue;
+        }
+
         // Remove all the moves the kings can't go to from their move list.
         std::shared_ptr<ChessPiece> king = m_kings[i];
         std::shared_ptr<MoveList> king_move_list = get_moves(king);
