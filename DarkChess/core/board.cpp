@@ -28,6 +28,9 @@ ChessBoard::ChessBoard(bool t_debug) : m_debug(t_debug)
         m_board.insert({i, cp_ptr});
         m_moves.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
         m_own_piece_threats.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
+
+        if (cp.get_type() == PieceType::KING)
+            m_kings[get_index_from_colour(cp.get_colour())] = cp_ptr;
     };
 
     // White pawns (1,0) -> (1,7)
@@ -348,178 +351,6 @@ void ChessBoard::generate_moves()
     prune_moves();
 }
 
-void ChessBoard::prune_moves()
-{
-    PROFILE_FUNCTION();
-
-    // Removes all the illegal moves
-
-    // TODO use m_own_piece_threats to stop captures by kings that would put them
-    // in check
-
-    prune_pinned_pieces();
-    prune_king_moves();
-    prune_king_stays_in_check();
-
-    /* Not sure this should be a thing
-
-    // remove any moves that are taking the enemy king
-    for (auto m : m_moves)
-    {
-        std::shared_ptr<ChessPiece> attacking_piece = m.first;
-        std::shared_ptr<MoveList> attacking_moves = m.second;
-
-        MoveList new_moves;
-        for (int attacking_ind : *attacking_moves)
-        {
-            //TODO can be optimised: dont need to use get_piece if we hold the positions
-            std::shared_ptr<ChessPiece> piece_under_threat = get_piece(attacking_ind);
-            if (!piece_under_threat || piece_under_threat->get_type() != PieceType::KING)
-                new_moves.push_back(attacking_ind);
-        }
-
-        m_moves[attacking_piece] = std::make_shared<MoveList>(new_moves);
-    }
-
-    */
-}
-
-void ChessBoard::prune_pinned_pieces()
-{
-    // Prune relevant moves for pinned pieces
-    for (auto map_entry : m_pinned_pieces)
-    {
-        Position pinned_pos = map_entry.first;
-        Position pinned_by_pos = map_entry.second;
-        std::shared_ptr<ChessPiece> pinned_piece = get_piece(pinned_pos);
-
-        std::shared_ptr<MoveList> pinned_moves = get_moves(pinned_pos);
-
-        if (!pinned_moves)
-        {
-            DC_CORE_CRITICAL("{} at {} has no moves container.",
-                             pinned_piece->get_name(),
-                             std::to_string(pinned_pos));
-            continue;
-        }
-
-        std::shared_ptr<MoveList> new_moves = std::make_shared<MoveList>();
-
-        for (int move : *pinned_moves)
-        {
-            Position move_pos = get_pos_from_index(move);
-            if (is_colinear(move_pos, pinned_pos, pinned_by_pos))
-            {
-                // DC_CORE_TRACE("{} is colinear to {} and {}, it is a valid move.",
-                // std::to_string(move_pos), std::to_string(pinned_pos),
-                // std::to_string(pinned_by_pos));
-                new_moves->push_back(move);
-            }
-        }
-
-        m_moves[pinned_piece] = new_moves;
-
-        // DC_CORE_TRACE("{} now only has {} moves.",
-        // pinned_piece->get_name(),
-        // get_moves(pinned_piece)->size());
-    }
-    m_pinned_pieces.clear();
-}
-void ChessBoard::prune_king_moves()
-{
-    // Prune relevant moves for king
-    std::shared_ptr<ChessPiece> kings[2];
-    MoveList threatening_moves[2];
-
-    for (auto m : m_moves)
-    {
-        // Get both the king and the moves that they can't go to.
-        std::shared_ptr<ChessPiece> attacking_piece = m.first;
-        std::shared_ptr<MoveList> attacking_moves = m.second;
-        int index = get_index_from_colour(attacking_piece->get_colour());
-
-        if (attacking_piece->get_type() == PieceType::KING)
-            kings[index] = attacking_piece;
-        else
-        {
-
-            threatening_moves[index].reserve(threatening_moves[index].size() + attacking_moves->size());
-            threatening_moves[index].insert(end(threatening_moves[index]),
-                                            begin(*attacking_moves),
-                                            end(*attacking_moves));
-        }
-    }
-
-    for (int i = 0; i < 2; ++i)
-    {
-        // TODO kings attacking each other -> one's moves will be removed before the
-        // others'
-        // ^^ I think it should be covered as we save the threats first.
-
-        // Remove all the moves the kings can't go to from their move list.
-        std::shared_ptr<ChessPiece> king = kings[i];
-        std::shared_ptr<MoveList> king_move_list = get_moves(king);
-
-        if (!king_move_list)
-        {
-            DC_CORE_CRITICAL("{} has no moves container.", king->get_name());
-            break;
-        }
-
-        // std::set_difference needs sorted containers
-        std::sort(begin(*king_move_list), end(*king_move_list));
-        std::sort(begin(threatening_moves[1 - i]), end(threatening_moves[1 - i]));
-
-        MoveList new_king_moves;
-        std::set_difference(begin(*king_move_list),
-                            end(*king_move_list),
-                            begin(threatening_moves[1 - i]),
-                            end(threatening_moves[1 - i]),
-                            std::back_inserter(new_king_moves));
-
-        m_moves[king] = std::make_shared<MoveList>(new_king_moves);
-    }
-}
-void ChessBoard::prune_king_stays_in_check()
-{
-
-    if (m_check_blocking_moves[0])
-        std::sort(begin(*m_check_blocking_moves[0]), end(*m_check_blocking_moves[0]));
-    if (m_check_blocking_moves[1])
-        std::sort(begin(*m_check_blocking_moves[1]), end(*m_check_blocking_moves[1]));
-
-    // If king is in check, remove moves for all pieces that aren't blocking moves.
-    // (which includes capturing the checking piece)
-    for (auto m : m_moves)
-    {
-        std::shared_ptr<ChessPiece> attacking_piece = m.first;
-        std::shared_ptr<MoveList> attacking_moves = m.second;
-        int index = get_index_from_colour(attacking_piece->get_colour());
-
-        // The king can't block itself
-        // If this piece's colour is in check
-        // set it's possible moves to only the ones that block check
-        if (m_is_in_check[index] &&
-            attacking_piece->get_type() != PieceType::KING)
-        {
-            MoveList new_moves;
-            std::sort(begin(*attacking_moves), end(*attacking_moves));
-
-            std::set_intersection(
-                begin(*m_check_blocking_moves[index]),
-                end(*m_check_blocking_moves[index]),
-                begin(*attacking_moves),
-                end(*attacking_moves),
-                std::back_inserter(new_moves));
-
-            m_moves[attacking_piece] = std::make_shared<MoveList>(new_moves);
-        }
-    }
-
-    for (int i = 0; i < 2; ++i)
-        m_check_blocking_moves[i] = nullptr;
-}
-
 void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
                               std::shared_ptr<MoveList> t_movelist)
 {
@@ -628,6 +459,167 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
             }
         }
     }
+}
+
+void ChessBoard::prune_moves()
+{
+    PROFILE_FUNCTION();
+
+    // Removes all the illegal moves
+
+    prune_pinned_pieces();
+    prune_king_moves();
+    prune_king_stays_in_check();
+
+    /* 
+    Not sure this should be a thing,
+    I honestly don't know why I thought I needed it in.
+    But I'm keeping it here until there are proper tests.
+
+    // remove any moves that are taking the enemy king
+    for (auto m : m_moves)
+    {
+        std::shared_ptr<ChessPiece> attacking_piece = m.first;
+        std::shared_ptr<MoveList> attacking_moves = m.second;
+
+        MoveList new_moves;
+        for (int attacking_ind : *attacking_moves)
+        {
+            //TODO can be optimised: dont need to use get_piece if we hold the positions
+            std::shared_ptr<ChessPiece> piece_under_threat = get_piece(attacking_ind);
+            if (!piece_under_threat || piece_under_threat->get_type() != PieceType::KING)
+                new_moves.push_back(attacking_ind);
+        }
+
+        m_moves[attacking_piece] = std::make_shared<MoveList>(new_moves);
+    }
+    */
+}
+
+void ChessBoard::prune_pinned_pieces()
+{
+    // Prune relevant moves for pinned pieces
+    for (auto map_entry : m_pinned_pieces)
+    {
+        Position pinned_pos = map_entry.first;
+        Position pinned_by_pos = map_entry.second;
+        std::shared_ptr<ChessPiece> pinned_piece = get_piece(pinned_pos);
+
+        std::shared_ptr<MoveList> pinned_moves = get_moves(pinned_pos);
+
+        if (!pinned_moves)
+        {
+            DC_CORE_CRITICAL("{} at {} has no moves container.",
+                             pinned_piece->get_name(),
+                             std::to_string(pinned_pos));
+            continue;
+        }
+
+        std::shared_ptr<MoveList> new_moves = std::make_shared<MoveList>();
+
+        for (int move : *pinned_moves)
+        {
+            Position move_pos = get_pos_from_index(move);
+            if (is_colinear(move_pos, pinned_pos, pinned_by_pos))
+            {
+                // DC_CORE_TRACE("{} is colinear to {} and {}, it is a valid move.",
+                // std::to_string(move_pos), std::to_string(pinned_pos),
+                // std::to_string(pinned_by_pos));
+                new_moves->push_back(move);
+            }
+        }
+
+        m_moves[pinned_piece] = new_moves;
+    }
+
+    m_pinned_pieces.clear();
+}
+void ChessBoard::prune_king_moves()
+{
+    // Prune relevant moves for king
+    MoveList threatening_moves[2];
+
+    auto add_to_threatening_moves = [&](std::pair<std::shared_ptr<ChessPiece>, std::shared_ptr<MoveList>> m) {
+        int index = get_index_from_colour(m.first->get_colour());
+        std::shared_ptr<MoveList> moves = m.second;
+
+        threatening_moves[index].reserve(threatening_moves[index].size() + moves->size());
+        threatening_moves[index].insert(end(threatening_moves[index]),
+                                        begin(*moves),
+                                        end(*moves));
+    };
+
+    // Get the squares attacked by pieces, as the king can't move there.
+    for (auto m : m_moves)
+        add_to_threatening_moves(m);
+
+    // Get the pieces that are defended, as the king can't take them either.
+    for (auto m : m_own_piece_threats)
+        add_to_threatening_moves(m);
+
+    for (int i = 0; i < 2; ++i)
+    {
+        // Remove all the moves the kings can't go to from their move list.
+        std::shared_ptr<ChessPiece> king = m_kings[i];
+        std::shared_ptr<MoveList> king_move_list = get_moves(king);
+
+        if (!king_move_list)
+        {
+            DC_CORE_CRITICAL("{} has no moves container.", king->get_name());
+            break;
+        }
+
+        // std::set_difference needs sorted containers
+        std::sort(begin(*king_move_list), end(*king_move_list));
+        std::sort(begin(threatening_moves[1 - i]), end(threatening_moves[1 - i]));
+
+        MoveList new_king_moves;
+        std::set_difference(begin(*king_move_list),
+                            end(*king_move_list),
+                            begin(threatening_moves[1 - i]),
+                            end(threatening_moves[1 - i]),
+                            std::back_inserter(new_king_moves));
+
+        m_moves[king] = std::make_shared<MoveList>(new_king_moves);
+    }
+}
+void ChessBoard::prune_king_stays_in_check()
+{
+    // std::set_intersection will need sorted containers
+    if (m_check_blocking_moves[0])
+        std::sort(begin(*m_check_blocking_moves[0]), end(*m_check_blocking_moves[0]));
+    if (m_check_blocking_moves[1])
+        std::sort(begin(*m_check_blocking_moves[1]), end(*m_check_blocking_moves[1]));
+
+    // If king is in check, remove moves for all pieces that aren't blocking moves.
+    // (which includes capturing the checking piece)
+    for (auto m : m_moves)
+    {
+        std::shared_ptr<ChessPiece> attacking_piece = m.first;
+        std::shared_ptr<MoveList> attacking_moves = m.second;
+        int index = get_index_from_colour(attacking_piece->get_colour());
+
+        // The king can't block itself
+        // If this piece's colour is in check
+        // set it's possible moves to only the ones that block check
+        if (m_is_in_check[index] && attacking_piece->get_type() != PieceType::KING)
+        {
+            MoveList new_moves;
+            std::sort(begin(*attacking_moves), end(*attacking_moves));
+
+            std::set_intersection(
+                begin(*m_check_blocking_moves[index]),
+                end(*m_check_blocking_moves[index]),
+                begin(*attacking_moves),
+                end(*attacking_moves),
+                std::back_inserter(new_moves));
+
+            m_moves[attacking_piece] = std::make_shared<MoveList>(new_moves);
+        }
+    }
+
+    for (int i = 0; i < 2; ++i)
+        m_check_blocking_moves[i] = nullptr;
 }
 
 const std::shared_ptr<MoveList> ChessBoard::get_moves(

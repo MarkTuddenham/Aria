@@ -36,11 +36,15 @@ public:
 private:
     BoardMap m_board;
     Moves m_moves;
-    Moves m_own_piece_threats;
-    bool m_is_in_check[2];
-    std::shared_ptr<MoveList> m_check_blocking_moves[2];
     PieceColour m_turn = PieceColour::WHITE;
+
+    bool m_is_in_check[2];
+    std::shared_ptr<ChessPiece> m_kings[2];
+
+    Moves m_own_piece_threats;
+    std::shared_ptr<MoveList> m_check_blocking_moves[2];
     std::map<Position, Position> m_pinned_pieces;
+
     int m_num_moves = 0;
     bool m_debug = false;
 
