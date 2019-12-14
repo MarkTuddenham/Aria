@@ -1,7 +1,7 @@
 #include <catch.hpp>
 #include <DarkChess.hpp>
 
-TEST_CASE("Starting position", "[fen][!mayfail]")
+TEST_CASE("Starting position", "[fen]")
 {
 
     DarkChess::ChessBoard cb_start;

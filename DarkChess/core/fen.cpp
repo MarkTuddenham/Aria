@@ -96,6 +96,8 @@ std::unique_ptr<ChessBoard> FEN::chess_board_from_fen(const std::string &fen)
     cb.m_num_moves = half_moves;
     DC_CORE_INFO("Moves set to: {}", cb.m_num_moves);
 
+    cb.generate_moves();
+
     return std::make_unique<ChessBoard>(cb);
 }
 
