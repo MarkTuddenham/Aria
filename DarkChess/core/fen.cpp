@@ -79,7 +79,7 @@ std::unique_ptr<ChessBoard> FEN::chess_board_from_fen(const std::string &fen)
         DC_CORE_ERROR("Invalid turn ({}) in FEN.", tokens.at(1));
         return nullptr;
     }
-    DC_CORE_INFO("Set {} to move next.", piece_colour_string.at(cb.m_turn));
+    DC_CORE_INFO("Set {} to move next.", colour_to_str_repr.at(cb.m_turn));
 
     // 3.
     DC_CORE_INFO("Castling has not been implemented yet.");
@@ -88,7 +88,7 @@ std::unique_ptr<ChessBoard> FEN::chess_board_from_fen(const std::string &fen)
     DC_CORE_INFO("En passant has not been implemented yet.");
 
     // 5.
-    DC_CORE_INFO("Fifty-move rule has not been implemented yet.");
+    DC_CORE_INFO("The fifty-move rule has not been implemented yet.");
 
     // 6.
     int half_moves = std::stoi(tokens.at(5)) * 2;
@@ -99,9 +99,34 @@ std::unique_ptr<ChessBoard> FEN::chess_board_from_fen(const std::string &fen)
     return std::make_unique<ChessBoard>(cb);
 }
 
-void FEN::set_position(const ChessBoard &cb, const std::string &fen_pos)
+void FEN::set_position(ChessBoard &cb, const std::string &fen_pos)
 {
     DC_CORE_INFO("Setting up position: {}", fen_pos);
+
+    int row = 7;
+    int col = 0;
+
+    for (char c : fen_pos)
+    {
+        int spaces = c - '0';
+
+        if (spaces > 0 && spaces <= 8)
+        {
+            col += spaces;
+        }
+        else if (c == '/')
+        {
+            row--;
+            col = 0;
+        }
+        else
+        {
+            PieceColour colour = isupper(c) ? PieceColour::WHITE : PieceColour::BLACK;
+            PieceType type = symbol_to_type.at(tolower(c));
+            cb.add_piece_to_board(ChessPiece(colour, type), get_index_from_pos({col, row}));
+            col++;
+        }
+    }
 }
 
 } // namespace DarkChess

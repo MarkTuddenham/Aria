@@ -12,7 +12,7 @@ public:
     static std::unique_ptr<ChessBoard> chess_board_from_fen(const std::string &fen);
 
 private:
-    static void set_position(const ChessBoard &, const std::string &);
+    static void set_position(ChessBoard &, const std::string &);
 };
 
 } // namespace DarkChess
