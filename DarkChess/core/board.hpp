@@ -61,6 +61,9 @@ private:
     void prune_king_stays_in_check();
 
     friend class FEN;
+    friend bool operator==(const ChessBoard &c1, const ChessBoard &c2);
 };
+
+bool board_map_compare(const BoardMap &, const BoardMap &);
 
 } // namespace DarkChess

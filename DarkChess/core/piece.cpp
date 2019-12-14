@@ -44,4 +44,10 @@ int get_index_from_colour(const PieceColour &colour)
     return static_cast<std::underlying_type<PieceColour>::type>(colour);
 }
 
+bool operator==(const ChessPiece &c1, const ChessPiece &c2)
+{
+    return c1.col == c2.col &&
+           c1.type == c2.type;
+}
+
 } // namespace DarkChess

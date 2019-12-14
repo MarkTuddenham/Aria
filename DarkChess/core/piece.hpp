@@ -36,11 +36,11 @@ public:
 
     char get_symbol() const;
 
-    friend std::ostream &operator<<(std::ostream &os, ChessPiece const &cp);
-
 private:
     PieceColour col;
     PieceType type;
+    friend std::ostream &operator<<(std::ostream &os, ChessPiece const &cp);
+    friend bool operator==(const ChessPiece &c1, const ChessPiece &c2);
 };
 
 int get_index_from_colour(const PieceColour &);

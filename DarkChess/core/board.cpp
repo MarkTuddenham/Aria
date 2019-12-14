@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <memory>
 #include <vector>
+#include <map>
 
 #include "DarkChess/core/board.hpp"
 #include "DarkChess/core/instrumentation.hpp"
@@ -439,18 +440,10 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
                                 std::make_shared<MoveList>(check_blocking_moves);
                         }
                         else
-                        // m_check_blocking_moves[king_colour_ind] has already been initialised
-                        // therefore, the king is in check from elsewhere.
-                        // there is now no move that will block both checks.
-                        {
-                            m_check_blocking_moves[king_colour_ind]->clear();
-                        }
+                            // m_check_blocking_moves[king_colour_ind] has already been initialised
+                            // therefore, the ki    friend bool operator==(const ChessBoard &c1, const ChessBoard &c2);
 
-                        break;
-                    }
-                    else
-                    {
-                        looking_for_king = true;
+                            looking_for_king = true;
                         potentially_pinned_piece = to_piece;
                         potentially_pinned_piece_pos = to_pos;
                         continue;
@@ -685,6 +678,24 @@ std::string ChessBoard::to_string() const
     str += "    0   1   2   3   4   5   6   7  \n";
 
     return str;
+}
+
+bool operator==(const ChessBoard &c1, const ChessBoard &c2)
+{
+
+    return c1.m_turn == c2.m_turn &&
+           c1.m_num_moves == c2.m_num_moves &&
+           board_map_compare(c1.m_board, c2.m_board);
+}
+
+bool board_map_compare(const BoardMap &lhs, const BoardMap &rhs)
+{
+    return lhs.size() == rhs.size() &&
+           std::equal(lhs.begin(),
+                      lhs.end(),
+                      rhs.begin(),
+                      [](auto a, auto b) { return a.first == b.first &&
+                                                  *a.second == *b.second; });
 }
 
 } // namespace DarkChess
