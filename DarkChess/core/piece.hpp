@@ -36,16 +36,16 @@ public:
 
     char get_symbol() const;
 
-    friend std::ostream& operator<<(std::ostream& os, ChessPiece const& cp);
+    friend std::ostream &operator<<(std::ostream &os, ChessPiece const &cp);
 
 private:
     PieceColour col;
     PieceType type;
 };
 
-int get_index_from_colour(const PieceColour&);
+int get_index_from_colour(const PieceColour &);
 
-const std::map<const PieceType, const std::string> piece_type_string({
+const std::map<const PieceType, const std::string> type_to_str_repr({
     {PieceType::PAWN, "Pawn"},
     {PieceType::KNIGHT, "Knight"},
     {PieceType::BISHOP, "Bishop"},
@@ -54,7 +54,7 @@ const std::map<const PieceType, const std::string> piece_type_string({
     {PieceType::KING, "King"},
 });
 
-const std::map<const PieceType, const char> piece_symbol_string({
+const std::map<const PieceType, const char> type_to_symbol({
     {PieceType::PAWN, 'p'},
     {PieceType::KNIGHT, 'n'},
     {PieceType::BISHOP, 'b'},
@@ -63,7 +63,16 @@ const std::map<const PieceType, const char> piece_symbol_string({
     {PieceType::KING, 'k'},
 });
 
-const std::map<const PieceColour, const std::string> piece_colour_string({
+const std::map<const char, const PieceType> symbol_to_type({
+    {'p', PieceType::PAWN},
+    {'n', PieceType::KNIGHT},
+    {'b', PieceType::BISHOP},
+    {'r', PieceType::ROOK},
+    {'q', PieceType::QUEEN},
+    {'k', PieceType::KING},
+});
+
+const std::map<const PieceColour, const std::string> colour_to_str_repr({
     {PieceColour::WHITE, "White"},
     {PieceColour::BLACK, "Black"},
 });

@@ -91,7 +91,7 @@ PieceColour ChessBoard::get_turn() const
 
 const std::string &ChessBoard::get_turn_name() const
 {
-    return piece_colour_string.at(m_turn);
+    return colour_to_str_repr.at(m_turn);
 }
 
 const std::unique_ptr<BoardMap> ChessBoard::get_pieces() const
