@@ -33,3 +33,5 @@ cmake --build _build/
 # Run the example
 ./bin/DarkChessExample
 ```
+
+[Generate FEN positions](https://www.chessvideos.tv/chess-diagram-generator.php)
