@@ -11,7 +11,7 @@ add_executable(TorchExample torch.cpp)
 
 target_link_libraries(TorchExample 
 PRIVATE
-    DarkChess
+    Aria
     "${TORCH_LIBRARIES}"
 )
 

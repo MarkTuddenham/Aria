@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(DarkChessExample VERSION 0.1)
+project(AriaExample VERSION 0.1)
 
 # add the executable
-add_executable(DarkChessExample dark_chess.cpp)
+add_executable(AriaExample aria.cpp)
 
-target_link_libraries(DarkChessExample 
+target_link_libraries(AriaExample 
 PRIVATE
-    DarkChess
+    Aria
 )
 
 set(COMPILE_OPTIONS "")
@@ -22,9 +22,9 @@ elseif(UNIX)
     list(APPEND COMPILE_OPTIONS "PLATFORM_LINUX")
 endif()
 
-target_compile_definitions(DarkChessExample PRIVATE ${COMPILE_OPTIONS})
+target_compile_definitions(AriaExample PRIVATE ${COMPILE_OPTIONS})
 
-target_include_directories(DarkChessExample 
+target_include_directories(AriaExample 
 PRIVATE
     "${PROJECT_BINARY_DIR}"
     "${PROJECT_BINARY_DIR}"
