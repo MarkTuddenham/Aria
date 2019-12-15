@@ -35,3 +35,7 @@ cmake --build _build/
 ```
 
 [Generate FEN positions](https://www.chessvideos.tv/chess-diagram-generator.php)
+
+---
+
+Copyright © 2019 Mark Tuddenham
