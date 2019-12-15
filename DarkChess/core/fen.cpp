@@ -62,7 +62,7 @@ std::unique_ptr<ChessBoard> FEN::chess_board_from_fen(const std::string &fen)
 
     if (tokens.size() != 6)
     {
-        DC_CORE_ERROR("FEN does not have enough terms.");
+        DC_CORE_ERROR("FEN: Not have enough terms. Expecting 6, got {}", tokens.size());
         return nullptr;
     }
 
@@ -76,25 +76,25 @@ std::unique_ptr<ChessBoard> FEN::chess_board_from_fen(const std::string &fen)
         cb.m_turn = PieceColour::BLACK;
     else
     {
-        DC_CORE_ERROR("Invalid turn ({}) in FEN.", tokens.at(1));
+        DC_CORE_ERROR("FEN: Invalid turn ({}).", tokens.at(1));
         return nullptr;
     }
-    DC_CORE_INFO("Set {} to move next.", colour_to_str_repr.at(cb.m_turn));
+    DC_CORE_TRACE("FEN: Set {} to move next.", colour_to_str_repr.at(cb.m_turn));
 
     // 3.
-    DC_CORE_INFO("Castling has not been implemented yet.");
+    DC_CORE_TRACE("FEN: Castling has not been implemented yet.");
 
     // 4.
-    DC_CORE_INFO("En passant has not been implemented yet.");
+    DC_CORE_TRACE("FEN: En passant has not been implemented yet.");
 
     // 5.
-    DC_CORE_INFO("The fifty-move rule has not been implemented yet.");
+    DC_CORE_TRACE("FEN: The fifty-move rule has not been implemented yet.");
 
     // 6.
     int half_moves = std::stoi(tokens.at(5)) * 2;
     half_moves -= cb.m_turn == PieceColour::WHITE ? 2 : 1;
     cb.m_num_moves = half_moves;
-    DC_CORE_INFO("Moves set to: {}", cb.m_num_moves);
+    DC_CORE_TRACE("FEN: Moves set to: {}", cb.m_num_moves);
 
     cb.generate_moves();
 
@@ -103,7 +103,7 @@ std::unique_ptr<ChessBoard> FEN::chess_board_from_fen(const std::string &fen)
 
 void FEN::set_position(ChessBoard &cb, const std::string &fen_pos)
 {
-    DC_CORE_INFO("Setting up position: {}", fen_pos);
+    DC_CORE_TRACE("FEN: Setting up position: {}", fen_pos);
 
     int row = 7;
     int col = 0;
