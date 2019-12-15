@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include "DarkChess/core/board.hpp"
+#include "Aria/core/board.hpp"
 
-namespace DarkChess
+namespace Aria
 {
 
 class FEN
@@ -15,4 +15,4 @@ private:
     static void set_position(ChessBoard &, const std::string &);
 };
 
-} // namespace DarkChess
+} // namespace Aria

@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 
-namespace DarkChess
+namespace Aria
 {
 
 enum class PieceType
@@ -77,4 +77,4 @@ const std::map<const PieceColour, const std::string> colour_to_str_repr({
     {PieceColour::BLACK, "Black"},
 });
 
-} // namespace DarkChess
+} // namespace Aria

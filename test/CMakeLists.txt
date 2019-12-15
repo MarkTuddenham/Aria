@@ -12,7 +12,7 @@ add_executable(Tests
 
 target_link_libraries(Tests 
 PRIVATE
-    DarkChess
+    Aria
 )
 
 set(COMPILE_OPTIONS "")

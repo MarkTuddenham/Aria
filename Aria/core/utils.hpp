@@ -4,9 +4,9 @@
 #include <map>
 #include <memory>
 
-#include "DarkChess/core/piece.hpp"
+#include "Aria/core/piece.hpp"
 
-namespace DarkChess
+namespace Aria
 {
 
 typedef std::vector<int> MoveList;
@@ -26,9 +26,9 @@ Position operator+(const Position &, const Position &);
 Position operator*(const Position &, const int &);
 Position operator*(const int &, const Position &);
 
-} // namespace DarkChess
+} // namespace Aria
 
 namespace std
 {
-std::string to_string(const DarkChess::Position &pos);
+std::string to_string(const Aria::Position &pos);
 }

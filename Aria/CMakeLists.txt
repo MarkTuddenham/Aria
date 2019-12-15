@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 configure_file(config.hpp.in config.hpp)
 
-add_library(DarkChess 
+add_library(Aria 
             core/board.cpp
             core/fen.cpp
             core/log.cpp
@@ -22,15 +22,15 @@ elseif(UNIX)
     list(APPEND COMPILE_OPTIONS "PLATFORM_LINUX")
 endif()
 
-target_compile_definitions(DarkChess PRIVATE ${COMPILE_OPTIONS})
+target_compile_definitions(Aria PRIVATE ${COMPILE_OPTIONS})
 
 if(MSVC)
-    target_compile_options(DarkChess
+    target_compile_options(Aria
     PRIVATE
         "/W4"
     )
 else()
-    target_compile_options(DarkChess
+    target_compile_options(Aria
     PRIVATE
         "-O1" 
         # "-pthread"
@@ -45,19 +45,19 @@ else()
     )
 endif()
 
-target_include_directories(DarkChess
+target_include_directories(Aria
 PRIVATE
-    "${PROJECT_SOURCE_DIR}/DarkChess/vendor/"
+    "${PROJECT_SOURCE_DIR}/Aria/vendor/"
 PUBLIC
     "${PROJECT_SOURCE_DIR}/" 
     "${PROJECT_BINARY_DIR}/"
 INTERFACE
-    "${PROJECT_SOURCE_DIR}/DarkChess"
+    "${PROJECT_SOURCE_DIR}/Aria"
 )
 
 add_subdirectory(vendor/spdlog/)
 
-target_link_libraries(DarkChess
+target_link_libraries(Aria
 PUBLIC
     spdlog
 )

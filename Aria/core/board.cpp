@@ -3,13 +3,13 @@
 #include <vector>
 #include <map>
 
-#include "DarkChess/core/board.hpp"
-#include "DarkChess/core/instrumentation.hpp"
-#include "DarkChess/core/log.hpp"
-#include "DarkChess/core/piece.hpp"
-#include "DarkChess/core/utils.hpp"
+#include "Aria/core/board.hpp"
+#include "Aria/core/instrumentation.hpp"
+#include "Aria/core/log.hpp"
+#include "Aria/core/piece.hpp"
+#include "Aria/core/utils.hpp"
 
-namespace DarkChess
+namespace Aria
 {
 
 ChessBoard::ChessBoard() : ChessBoard(true) {}
@@ -130,7 +130,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     // check if there is a piece to move
     if (!moving_piece)
     {
-        DC_CORE_WARN("Invalid move {} to {}: No Piece.",
+        ARIA_CORE_WARN("Invalid move {} to {}: No Piece.",
                      std::to_string(get_pos_from_index(t_from_ind)),
                      std::to_string(get_pos_from_index(t_to_ind)));
         return;
@@ -139,7 +139,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     // check piece is of the correct colour
     if (moving_piece->get_colour() != m_turn)
     {
-        DC_CORE_WARN("Invalid move {} to {}: Not your turn.",
+        ARIA_CORE_WARN("Invalid move {} to {}: Not your turn.",
                      std::to_string(get_pos_from_index(t_from_ind)),
                      std::to_string(get_pos_from_index(t_to_ind)));
         return;
@@ -148,7 +148,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     std::shared_ptr<MoveList> legal_moves = get_moves(moving_piece);
     if (!legal_moves)
     {
-        DC_CORE_CRITICAL("Piece ({} at {}) has no moves container!",
+        ARIA_CORE_CRITICAL("Piece ({} at {}) has no moves container!",
                          moving_piece->get_name(),
                          std::to_string(t_from_ind));
     }
@@ -156,7 +156,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     if (legal_moves &&
         std::find(begin(*legal_moves), end(*legal_moves), t_to_ind) == end(*legal_moves))
     {
-        DC_CORE_WARN("Invalid move {} to {}: Not a legal move.",
+        ARIA_CORE_WARN("Invalid move {} to {}: Not a legal move.",
                      std::to_string(get_pos_from_index(t_from_ind)),
                      std::to_string(get_pos_from_index(t_to_ind)));
         return;
@@ -181,7 +181,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     swap_turn();
     ++m_num_moves;
 
-    DC_CORE_INFO("Move: {} from {} to {}", moving_piece->get_name(),
+    ARIA_CORE_INFO("Move: {} from {} to {}", moving_piece->get_name(),
                  std::to_string(get_pos_from_index(t_from_ind)),
                  std::to_string(get_pos_from_index(t_to_ind)));
 
@@ -208,7 +208,7 @@ void ChessBoard::generate_moves()
 
         if (!current_piece)
         {
-            DC_CORE_CRITICAL("Hanging piece pointer ({}) in BoardMap!",
+            ARIA_CORE_CRITICAL("Hanging piece pointer ({}) in BoardMap!",
                              std::to_string(current_pos));
             return;
         }
@@ -352,7 +352,7 @@ void ChessBoard::generate_moves()
 
         default:
             // TODO raise error
-            DC_CORE_CRITICAL("Unknown Piece.");
+            ARIA_CORE_CRITICAL("Unknown Piece.");
             break;
         }
     }
@@ -396,7 +396,7 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
                 // Found enemy king with no blockers -> piece is pinned.
                 if (is_enemy_piece && to_piece->get_type() == PieceType::KING)
                 {
-                    DC_CORE_TRACE("{} is pinned!", potentially_pinned_piece->get_name());
+                    ARIA_CORE_TRACE("{} is pinned!", potentially_pinned_piece->get_name());
                     m_pinned_pieces.insert({potentially_pinned_piece_pos, current_pos});
                     break;
                 }
@@ -440,7 +440,7 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
                     // If we are attacking the enemy king, then it is in check
                     if (to_piece->get_type() == PieceType::KING)
                     {
-                        DC_CORE_TRACE("{} {} is in check by {} {}.", to_piece->get_name(),
+                        ARIA_CORE_TRACE("{} {} is in check by {} {}.", to_piece->get_name(),
                                       std::to_string(to_pos), current_piece->get_name(),
                                       std::to_string(current_pos));
 
@@ -534,7 +534,7 @@ void ChessBoard::prune_pinned_pieces()
 
         if (!pinned_moves)
         {
-            DC_CORE_CRITICAL("{} at {} has no moves container.",
+            ARIA_CORE_CRITICAL("{} at {} has no moves container.",
                              pinned_piece->get_name(),
                              std::to_string(pinned_pos));
             continue;
@@ -547,7 +547,7 @@ void ChessBoard::prune_pinned_pieces()
             Position move_pos = get_pos_from_index(move);
             if (is_colinear(move_pos, pinned_pos, pinned_by_pos))
             {
-                // DC_CORE_TRACE("{} is colinear to {} and {}, it is a valid move.",
+                // ARIA_CORE_TRACE("{} is colinear to {} and {}, it is a valid move.",
                 // std::to_string(move_pos), std::to_string(pinned_pos),
                 // std::to_string(pinned_by_pos));
                 new_moves->push_back(move);
@@ -588,7 +588,7 @@ void ChessBoard::prune_king_moves()
         if (!m_kings[i])
         {
             //TODO better error message.
-            DC_CORE_ERROR("{} king does not exist.", PieceColour(i));
+            ARIA_CORE_ERROR("{} king does not exist.", PieceColour(i));
             continue;
         }
 
@@ -598,7 +598,7 @@ void ChessBoard::prune_king_moves()
 
         if (!king_move_list)
         {
-            DC_CORE_CRITICAL("{} has no moves container.", king->get_name());
+            ARIA_CORE_CRITICAL("{} has no moves container.", king->get_name());
             break;
         }
 
@@ -729,4 +729,4 @@ bool board_map_compare(const BoardMap &lhs, const BoardMap &rhs)
                                                   *a.second == *b.second; });
 }
 
-} // namespace DarkChess
+} // namespace Aria
