@@ -147,9 +147,11 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
 
     std::shared_ptr<MoveList> legal_moves = get_moves(moving_piece);
     if (!legal_moves)
+    {
         DC_CORE_CRITICAL("Piece ({} at {}) has no moves container!",
                          moving_piece->get_name(),
                          std::to_string(t_from_ind));
+    }
 
     if (legal_moves &&
         std::find(begin(*legal_moves), end(*legal_moves), t_to_ind) == end(*legal_moves))
