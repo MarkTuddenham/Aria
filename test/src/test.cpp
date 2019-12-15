@@ -5,12 +5,14 @@
 
 int main(int argc, char *argv[])
 {
-    DarkChess::Log::init();
-    Instrumentor::Get().BeginSession("DarkChess");
+    // Turn off logging and profiling.
+
+    DarkChess::Log::init(DarkChess::Log::Level::NONE);
+    // Instrumentor::Get().BeginSession("DarkChess");
 
     int result = Catch::Session().run(argc, argv);
 
-    Instrumentor::Get().EndSession();
+    // Instrumentor::Get().EndSession();
 
     return result;
 }
