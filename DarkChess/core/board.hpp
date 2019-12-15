@@ -32,6 +32,8 @@ public:
     void move(int, int);
     void move(Position, Position);
 
+    bool is_in_check(const PieceColour &) const;
+
 private:
     BoardMap m_board;
     Moves m_moves;
@@ -40,7 +42,7 @@ private:
     bool m_is_in_check[2];
     std::shared_ptr<ChessPiece> m_kings[2];
 
-    Moves m_own_piece_threats;
+    Moves m_threats_for_king;
     std::shared_ptr<MoveList> m_check_blocking_moves[2];
     std::map<Position, Position> m_pinned_pieces;
 

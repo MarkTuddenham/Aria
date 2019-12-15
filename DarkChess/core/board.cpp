@@ -37,7 +37,7 @@ void ChessBoard::add_piece_to_board(const ChessPiece &cp, int ind)
     std::shared_ptr<ChessPiece> cp_ptr = std::make_shared<ChessPiece>(cp);
     m_board.insert({ind, cp_ptr});
     m_moves.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
-    m_own_piece_threats.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
+    m_threats_for_king.insert({cp_ptr, std::make_shared<MoveList>(MoveList())});
 
     if (cp.get_type() == PieceType::KING)
         m_kings[get_index_from_colour(cp.get_colour())] = cp_ptr;
@@ -169,7 +169,7 @@ void ChessBoard::move(int t_from_ind, int t_to_ind)
     if (captured_piece)
     {
         m_moves.erase(captured_piece);
-        m_own_piece_threats.erase(captured_piece);
+        m_threats_for_king.erase(captured_piece);
     }
 
     // remove piece from old position
@@ -247,7 +247,7 @@ void ChessBoard::generate_moves()
                     }
                     else
                     {
-                        m_own_piece_threats.at(current_piece)->push_back(abs_move_ind);
+                        m_threats_for_king.at(current_piece)->push_back(abs_move_ind);
                     }
                 }
             }
@@ -369,7 +369,9 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
     for (Position dir : t_directions)
     {
         bool looking_for_king = false;
+        bool getting_impossible_king_moves = false;
         std::shared_ptr<ChessPiece> potentially_pinned_piece;
+
         Position potentially_pinned_piece_pos;
         std::vector<int> check_blocking_moves;
 
@@ -394,13 +396,28 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
                 {
                     DC_CORE_TRACE("{} is pinned!", potentially_pinned_piece->get_name());
                     m_pinned_pieces.insert({potentially_pinned_piece_pos, current_pos});
+                    break;
                 }
                 else if (to_piece)
                 {
-                    // found a blocker (either colour) -> piece is not pinned.
+                    // found another piece before the king -> piece is not pinned.
                     break;
                 }
-                // no piece found yet, keep looking.
+                // else: no piece found yet, keep looking.
+            }
+            else if (getting_impossible_king_moves)
+            {
+                if (!to_piece)
+                {
+                    // Found no piece: Therefore the king cant move here
+                    m_threats_for_king[current_piece]->push_back(to_ind);
+
+                    continue;
+                }
+                else
+                {
+                    break;
+                }
             }
             else
             {
@@ -440,10 +457,17 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
                                 std::make_shared<MoveList>(check_blocking_moves);
                         }
                         else
-                            // m_check_blocking_moves[king_colour_ind] has already been initialised
-                            // therefore, the ki    friend bool operator==(const ChessBoard &c1, const ChessBoard &c2);
+                        // m_check_blocking_moves[king_colour_ind] has already been initialised
+                        // therefore, the king is in check from elsewhere.
+                        {
+                            m_check_blocking_moves[king_colour_ind]->clear();
+                        }
 
-                            looking_for_king = true;
+                        getting_impossible_king_moves = true;
+                    }
+                    else
+                    {
+                        looking_for_king = true;
                         potentially_pinned_piece = to_piece;
                         potentially_pinned_piece_pos = to_pos;
                         continue;
@@ -452,7 +476,7 @@ void ChessBoard::ad_infinitum(int t_ind, std::vector<Position> t_directions,
                 else
                 {
                     // Found our own piece
-                    m_own_piece_threats.at(current_piece)->push_back(to_ind);
+                    m_threats_for_king.at(current_piece)->push_back(to_ind);
                     break;
                 }
             }
@@ -553,7 +577,7 @@ void ChessBoard::prune_king_moves()
         add_to_threatening_moves(m);
 
     // Get the pieces that are defended, as the king can't take them either.
-    for (auto m : m_own_piece_threats)
+    for (auto m : m_threats_for_king)
         add_to_threatening_moves(m);
 
     for (int i = 0; i < 2; ++i)
@@ -678,6 +702,11 @@ std::string ChessBoard::to_string() const
     str += "    0   1   2   3   4   5   6   7  \n";
 
     return str;
+}
+
+bool ChessBoard::is_in_check(const PieceColour &pc) const
+{
+    return m_is_in_check[get_index_from_colour(pc)];
 }
 
 bool operator==(const ChessBoard &c1, const ChessBoard &c2)

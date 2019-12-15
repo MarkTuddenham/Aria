@@ -58,8 +58,13 @@ TEST_CASE("kings attacking each other", "[check]")
     REQUIRE(white_king_moves->size() == 5);
     REQUIRE(black_king_moves->size() == 5);
 
+    std::sort(begin(*white_king_moves), end(*white_king_moves));
+    std::sort(begin(*black_king_moves), end(*black_king_moves));
     REQUIRE(*white_king_moves == std::vector({29, 30, 38, 45, 46}));
     REQUIRE(*black_king_moves == std::vector({26, 27, 34, 42, 43}));
+
+    REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::WHITE));
+    REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::BLACK));
 }
 
 TEST_CASE("King can't move into check", "[check]")
@@ -74,7 +79,12 @@ TEST_CASE("King can't move into check", "[check]")
 
     REQUIRE(white_king_moves);
     REQUIRE(white_king_moves->size() == 4);
+
+    std::sort(begin(*white_king_moves), end(*white_king_moves));
     REQUIRE(*white_king_moves == std::vector({29, 30, 38, 46}));
+
+    REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::WHITE));
+    REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::BLACK));
 }
 
 TEST_CASE("King can capture to leave check", "[check]")
@@ -90,7 +100,12 @@ TEST_CASE("King can capture to leave check", "[check]")
 
     REQUIRE(white_king_moves);
     REQUIRE(white_king_moves->size() == 4);
+
+    std::sort(begin(*white_king_moves), end(*white_king_moves));
     REQUIRE(*white_king_moves == std::vector({28, 30, 36, 45}));
+
+    REQUIRE(cb_from_fen->is_in_check(DarkChess::PieceColour::WHITE));
+    REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::BLACK));
 }
 
 TEST_CASE("King can't capture defended piece", "[check]")
@@ -106,30 +121,89 @@ TEST_CASE("King can't capture defended piece", "[check]")
 
     REQUIRE(white_king_moves);
     REQUIRE(white_king_moves->size() == 3);
+
+    std::sort(begin(*white_king_moves), end(*white_king_moves));
     REQUIRE(*white_king_moves == std::vector({28, 30, 38}));
+
+    REQUIRE(cb_from_fen->is_in_check(DarkChess::PieceColour::WHITE));
+    REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::BLACK));
 }
 
-TEST_CASE("Pinned pieces can't move out of the pin", "[check][!mayfail]")
+TEST_CASE("Pinned pieces can't move out of the pin", "[check]")
 {
 
-    std::unique_ptr<DarkChess::ChessBoard> cb_from_fen =
-        DarkChess::FEN::chess_board_from_fen(
-            "8/5r2/8/5N2/1k6/5K2/8/8 w - - 0 1");
+    SECTION("Knight that has no moves")
+    {
+        std::unique_ptr<DarkChess::ChessBoard> cb_from_fen =
+            DarkChess::FEN::chess_board_from_fen(
+                "8/5r2/8/5N2/1k6/5K2/8/8 w - - 0 1");
 
-    REQUIRE(cb_from_fen);
+        REQUIRE(cb_from_fen);
 
-    const std::shared_ptr<DarkChess::MoveList> white_knight_moves = cb_from_fen->get_moves({5, 4});
+        const std::shared_ptr<DarkChess::MoveList> white_knight_moves = cb_from_fen->get_moves({5, 4});
 
-    print_moves(*cb_from_fen, {5, 4});
-    DC_INFO(cb_from_fen->to_string());
+        REQUIRE(white_knight_moves);
+        REQUIRE(white_knight_moves->size() == 0);
 
-    REQUIRE(white_knight_moves);
-    REQUIRE(white_knight_moves->size() == 0);
+        REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::WHITE));
+        REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::BLACK));
+    }
 
-    REQUIRE(false); // TODO king is in check when it shouldnt be!!!
+    SECTION("Rook that has a subset of moves")
+    {
+        std::unique_ptr<DarkChess::ChessBoard> cb_from_fen =
+            DarkChess::FEN::chess_board_from_fen(
+                "8/5r2/8/5R2/1k6/5K2/8/8 w - - 0 1");
+
+        REQUIRE(cb_from_fen);
+
+        const std::shared_ptr<DarkChess::MoveList> white_rook_moves = cb_from_fen->get_moves({5, 4});
+
+        REQUIRE(white_rook_moves);
+        REQUIRE(white_rook_moves->size() == 3);
+
+        std::sort(begin(*white_rook_moves), end(*white_rook_moves));
+        REQUIRE(*white_rook_moves == std::vector({29, 45, 53}));
+
+        REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::WHITE));
+        REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::BLACK));
+    }
 }
 
-//TODO make sure m_is_in_check is set.
+TEST_CASE("Pieces can only move to blocking moves if the king is in check", "[check]")
+{
+    SECTION("No possible moves")
+    {
+        std::unique_ptr<DarkChess::ChessBoard> cb_from_fen =
+            DarkChess::FEN::chess_board_from_fen(
+                "8/5r2/8/1k3K2/8/3N4/8/8 w - - 0 1");
 
-// TODO pinned pieces moving out of the pin
-// TODO piece moving and king stays in check
+        REQUIRE(cb_from_fen);
+
+        const std::shared_ptr<DarkChess::MoveList> white_knight_moves = cb_from_fen->get_moves({3, 2});
+
+        REQUIRE(white_knight_moves);
+        REQUIRE(white_knight_moves->size() == 0);
+
+        REQUIRE(cb_from_fen->is_in_check(DarkChess::PieceColour::WHITE));
+        REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::BLACK));
+    }
+
+    SECTION("Possible moves")
+    {
+        std::unique_ptr<DarkChess::ChessBoard> cb_from_fen =
+            DarkChess::FEN::chess_board_from_fen(
+                "8/5r2/8/1k6/8/3N1K2/8/8 w - - 0 1");
+
+        REQUIRE(cb_from_fen);
+
+        const std::shared_ptr<DarkChess::MoveList> white_knight_moves = cb_from_fen->get_moves({3, 2});
+
+        REQUIRE(white_knight_moves);
+        REQUIRE(white_knight_moves->size() == 1);
+        REQUIRE(*white_knight_moves == std::vector({29}));
+
+        REQUIRE(cb_from_fen->is_in_check(DarkChess::PieceColour::WHITE));
+        REQUIRE_FALSE(cb_from_fen->is_in_check(DarkChess::PieceColour::BLACK));
+    }
+}
