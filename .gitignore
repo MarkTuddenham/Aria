@@ -9,6 +9,11 @@ results.json
 .vscode/
 out/
 
+# ML
+
+*.pt
+**/mnist/
+
 # CMake
 CMakeFiles/
 cmake_install.cmake
