@@ -9,7 +9,7 @@
 ![GitHub issues](https://img.shields.io/github/issues/marktuddenham/DarkChess.svg)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/marktuddenham/DarkChess.svg)
 
-Chess with fog of war.
+Variations on the game of Chess for RL applications.
 
 ---
 
@@ -33,6 +33,22 @@ cmake --build _build/
 # Run the example
 ./bin/DarkChessExample
 ```
+
+---
+
+## Torch
+
+C++ Torch can be downloaded from [pytorch.org](https://pytorch.org/).
+
+You can now either install C++ Torch as system library and cmake will find it automatically or pass cmake the directory using `CMAKE_PREFIX_PATH`.
+
+```bash
+cmake -H. -B_build/ -DCMAKE_PREFIX_PATH=/path/to/libtorch
+```
+
+---
+
+## Resources
 
 [Generate FEN positions](https://www.chessvideos.tv/chess-diagram-generator.php)
 

@@ -1,32 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(DarkChessExample VERSION 0.1)
-
-# add the executable
-add_executable(DarkChessExample dark_chess.cpp)
-
-target_link_libraries(DarkChessExample 
-PRIVATE
-    DarkChess
-)
-
-set(COMPILE_OPTIONS "")
-
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    list(APPEND COMPILE_OPTIONS "DEBUG" "PROFILING")
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message(FATAL_ERROR "Prevented in-tree built. Please create a build directory outside of the source code and call cmake from there. Thank you.")
 endif()
 
-if (WIN32)
-    list(APPEND COMPILE_OPTIONS "PLATFORM_WINDOWS")
-elseif(UNIX)
-    list(APPEND COMPILE_OPTIONS "PLATFORM_LINUX")
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
 endif()
 
-target_compile_definitions(DarkChessExample PRIVATE ${COMPILE_OPTIONS})
 
-target_include_directories(DarkChessExample 
-PRIVATE
-    "${PROJECT_BINARY_DIR}"
-    "${PROJECT_BINARY_DIR}"
-    "${LIBRARY_OUTPUT_PATH}"
-)
+add_subdirectory(basic)
+
+find_package(Torch)
+if(Torch_FOUND)
+    add_subdirectory(torch)
+endif()
