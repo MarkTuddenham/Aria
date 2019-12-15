@@ -4,10 +4,10 @@
 #include <memory>
 #include <string>
 
-#include "DarkChess/core/piece.hpp"
-#include "DarkChess/core/utils.hpp"
+#include "Aria/core/piece.hpp"
+#include "Aria/core/utils.hpp"
 
-namespace DarkChess
+namespace Aria
 {
 
 class ChessBoard
@@ -68,4 +68,4 @@ private:
 
 bool board_map_compare(const BoardMap &, const BoardMap &);
 
-} // namespace DarkChess
+} // namespace Aria

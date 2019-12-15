@@ -2,10 +2,10 @@
 #include <map>
 #include <memory>
 
-#include "DarkChess/core/utils.hpp"
-#include "DarkChess/core/piece.hpp"
+#include "Aria/core/utils.hpp"
+#include "Aria/core/piece.hpp"
 
-namespace DarkChess
+namespace Aria
 {
 
 Position get_pos_from_index(int t_ind)
@@ -56,12 +56,12 @@ Position operator*(const int& i, const Position& p)
     return p * i; // use other operator overload
 }
 
-} // namespace DarkChess
+} // namespace Aria
 
 namespace std
 {
 
-std::string to_string(const DarkChess::Position& pos)
+std::string to_string(const Aria::Position& pos)
 {
     return "(" + std::to_string(pos.first) + "," + std::to_string(pos.second) + ")";
 }

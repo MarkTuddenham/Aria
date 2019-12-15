@@ -1,9 +1,9 @@
 #include <ostream>
 #include <string>
 
-#include "DarkChess/core/piece.hpp"
+#include "Aria/core/piece.hpp"
 
-namespace DarkChess
+namespace Aria
 {
 
 ChessPiece::ChessPiece(PieceColour t_col, PieceType t_type) : col(t_col), type(t_type) {}
@@ -50,4 +50,4 @@ bool operator==(const ChessPiece &c1, const ChessPiece &c2)
            c1.type == c2.type;
 }
 
-} // namespace DarkChess
+} // namespace Aria

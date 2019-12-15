@@ -1,9 +1,9 @@
 #include <catch.hpp>
-#include <DarkChess.hpp>
+#include <Aria.hpp>
 
 TEST_CASE("Board Constructor", "[board]")
 {
-    DarkChess::ChessBoard cb;
+    Aria::ChessBoard cb;
 
     REQUIRE(cb.to_string() != "");
 

@@ -1,14 +1,14 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
 
-#include <DarkChess.hpp>
+#include <Aria.hpp>
 
 int main(int argc, char *argv[])
 {
     // Turn off logging and profiling.
 
-    DarkChess::Log::init(DarkChess::Log::Level::NONE);
-    // Instrumentor::Get().BeginSession("DarkChess");
+    Aria::Log::init(Aria::Log::Level::NONE);
+    // Instrumentor::Get().BeginSession("Aria");
 
     int result = Catch::Session().run(argc, argv);
 

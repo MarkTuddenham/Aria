@@ -1,9 +1,9 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
-#include "DarkChess/core/log.hpp"
+#include "Aria/core/log.hpp"
 
-namespace DarkChess
+namespace Aria
 {
 
 std::shared_ptr<spdlog::logger> Log::s_core_logger;
@@ -17,7 +17,7 @@ void Log::init(const Log::Level &level)
 
     const spdlog::level::level_enum spdlog_level = Log::dc_to_spdlog_level(level);
 
-    s_core_logger = spdlog::stdout_color_mt("DarkChess Engine");
+    s_core_logger = spdlog::stdout_color_mt("Aria Engine");
     s_core_logger->set_level(spdlog_level);
 
     s_client_logger = spdlog::stdout_color_mt("App");
@@ -37,4 +37,4 @@ spdlog::level::level_enum Log::dc_to_spdlog_level(Log::Level level)
     return map.at(level);
 }
 
-} // namespace DarkChess
+} // namespace Aria
