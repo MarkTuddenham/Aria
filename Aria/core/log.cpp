@@ -1,3 +1,5 @@
+#include <map>
+
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
@@ -26,15 +28,16 @@ void Log::init(const Log::Level &level)
 
 spdlog::level::level_enum Log::dc_to_spdlog_level(Log::Level level)
 {
-    static const auto map = std::unordered_map<const Log::Level, const spdlog::level::level_enum>(
+
+    static const std::map<const Log::Level, const spdlog::level::level_enum> level_conversion_map(
         {{Log::Level::CRITICAL, spdlog::level::critical},
-         {Log::Level::ERROR, spdlog::level::err},
+         {Log::Level::ERR, spdlog::level::err},
          {Log::Level::WARN, spdlog::level::warn},
          {Log::Level::INFO, spdlog::level::info},
          {Log::Level::TRACE, spdlog::level::trace},
          {Log::Level::NONE, spdlog::level::off}});
 
-    return map.at(level);
+    return level_conversion_map.at(level);
 }
 
 } // namespace Aria
