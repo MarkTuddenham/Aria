@@ -1,10 +1,10 @@
 #pragma once
 
-#include <DarkChess.hpp>
+#include <aria.hpp>
 
-namespace DarkChess::Agents
+namespace Aria::Agents
 {
 
 void get_image_stack(const ChessBoard &);
 
-} // namespace DarkChess::Agents
+} // namespace Aria::Agents

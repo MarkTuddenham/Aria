@@ -1,7 +1,7 @@
-#include <DarkChess.hpp>
-#include "DarkChess/agents/utils.hpp"
+#include <aria.hpp>
+#include "Aria/agents/utils.hpp"
 
-namespace DarkChess::Agents
+namespace Aria::Agents
 {
 
 void get_image_stack(const ChessBoard &cb)
@@ -10,4 +10,4 @@ void get_image_stack(const ChessBoard &cb)
     
 }
 
-} // namespace DarkChess::Agents
+} // namespace Aria::Agents

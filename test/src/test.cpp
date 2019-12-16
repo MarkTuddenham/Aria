@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
 
-#include <Aria.hpp>
+#include <aria.hpp>
 
 int main(int argc, char *argv[])
 {
