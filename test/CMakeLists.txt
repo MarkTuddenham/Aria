@@ -33,6 +33,5 @@ target_include_directories(Tests
 PRIVATE
     "include/"
     "${PROJECT_BINARY_DIR}"
-    "${PROJECT_BINARY_DIR}"
     "${LIBRARY_OUTPUT_PATH}"
 )

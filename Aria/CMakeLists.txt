@@ -48,6 +48,7 @@ else()
             "-Wuseless-cast"
             "-Wformat=2"
             "-fsanitize=address"
+            "-Wreorder"
         )
         list(APPEND TARGET_PRIVATE_LINK_LIBS -fsanitize=address)
     else()

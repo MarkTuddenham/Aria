@@ -57,10 +57,13 @@ struct CNNNet : torch::nn::Module
     torch::nn::Conv2d cv1, cv2;
 };
 
-int main()
-{
-    Aria::Log::init(Aria::Log::Level::TRACE);
-    const std::string device = "cuda";
+
+void app() {
+    // const std::string device = "cuda";
+    const std::string device = "cpu";
+    const std::string base_path = "/absolute/path/here/";
+    const std::string data_path = base_path + "ex/torch/mnist";
+    const std::string model_path = base_path + "ex/torch/net.pt";
 
     // Create a new Net.
     auto net = std::make_shared<CNNNet>();
@@ -68,13 +71,13 @@ int main()
 
     // Create a multi-threaded data loader for the MNIST dataset.
     auto data_loader = torch::data::make_data_loader(
-        torch::data::datasets::MNIST("./ex/torch/mnist", torch::data::datasets::MNIST::Mode::kTrain)
+        torch::data::datasets::MNIST(data_path, torch::data::datasets::MNIST::Mode::kTrain)
             .map(torch::data::transforms::Normalize<>(0.1307, 0.3081))
             .map(torch::data::transforms::Stack<>()),
         /*batch_size=*/64);
 
     auto test_dataset = torch::data::datasets::MNIST(
-        "./ex/torch/mnist",
+        data_path,
         torch::data::datasets::MNIST::Mode::kTest);
 
     auto test_loader = torch::data::make_data_loader(
@@ -120,7 +123,7 @@ int main()
             {
                 ARIA_TRACE("Batch: {} | Loss: {}", epoch, batch_index, loss.item<float>());
                 // Serialize your model periodically as a checkpoint.
-                torch::save(net, "./ex/torch/net.pt");
+                torch::save(net, model_path);
             }
         }
 
@@ -144,4 +147,12 @@ int main()
                   test_loss,
                   static_cast<double>(correct) / test_dataset_size);
     }
+}
+
+
+int main()
+{
+    Aria::Log::init(Aria::Log::Level::TRACE);
+
+    app();
 }
