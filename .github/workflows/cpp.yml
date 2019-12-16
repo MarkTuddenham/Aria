@@ -20,10 +20,34 @@ jobs:
     - uses: actions/checkout@v1
       with:
         submodules: recursive
-    - name: mkdir
+    - name: mkdir _build/
       run: mkdir -p _build/
-    - name: Setup cmake 
+    - name: setup cmake Release
       working-directory: _build
-      run: cmake ..
+      run: cmake -DCMAKE_BUILD_TYPE=Release ..
     - name: build
       run: cmake --build _build/
+  
+  test:
+    name: Tests - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: recursive
+    - name: mkdir _build/
+      run: mkdir -p _build/
+    - name: setup cmake Debug
+      working-directory: _build
+      run: cmake -DCMAKE_BUILD_TYPE=Debug ..
+    - name: build
+      run: cmake --build _build/
+    - name: run tests (Windows)
+      if: runner.os == 'Windows'
+      run: .\bin\Debug\Tests.exe
+    - name: run tests (*nix)
+      if: runner.os != 'Windows'
+      run: ./bin/Tests
