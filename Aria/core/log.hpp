@@ -12,7 +12,7 @@ class Log
 {
 
 public:
-    enum Level
+    enum class Level
     {
         CRITICAL,
         ERR,
