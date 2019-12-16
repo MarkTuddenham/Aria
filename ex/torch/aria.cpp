@@ -1,5 +1,6 @@
-#include <Aria.hpp>
 #include <iostream>
+
+#include <aria.hpp>
 
 void print_moves(const Aria::ChessBoard &t_cb, const Aria::Position t_pos);
 
@@ -37,8 +38,8 @@ void print_moves(const Aria::ChessBoard &t_cb, const Aria::Position t_pos)
     if (!p_moves)
     {
         ARIA_CRITICAL("Piece ({} at {}) has no moves container!",
-                    cp->get_name(),
-                    std::to_string(t_pos));
+                      cp->get_name(),
+                      std::to_string(t_pos));
         return;
     }
 
@@ -52,8 +53,8 @@ void print_moves(const Aria::ChessBoard &t_cb, const Aria::Position t_pos)
         str += std::to_string(Aria::get_pos_from_index(i)) + ' ';
 
     ARIA_INFO(str,
-            num_moves,
-            num_moves == 1 ? "" : "s",
-            cp->get_name(),
-            std::to_string(t_pos));
+              num_moves,
+              num_moves == 1 ? "" : "s",
+              cp->get_name(),
+              std::to_string(t_pos));
 }

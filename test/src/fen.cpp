@@ -1,5 +1,5 @@
 #include <catch.hpp>
-#include <Aria.hpp>
+#include <aria.hpp>
 
 TEST_CASE("Starting position", "[fen]")
 {

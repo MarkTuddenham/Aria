@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Aria.hpp>
+#include <aria.hpp>
 
 namespace Aria::Agents
 {

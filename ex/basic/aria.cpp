@@ -1,4 +1,4 @@
-#include <Aria.hpp>
+#include <aria.hpp>
 #include <iostream>
 
 void print_moves(const Aria::ChessBoard &t_cb, const Aria::Position t_pos);

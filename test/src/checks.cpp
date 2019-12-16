@@ -1,5 +1,5 @@
 #include <catch.hpp>
-#include <Aria.hpp>
+#include <aria.hpp>
 
 void print_moves(const Aria::ChessBoard &t_cb, const Aria::Position t_pos)
 {
