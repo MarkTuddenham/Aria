@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 
 project(TorchExample VERSION 0.1)
 
-# find_package(Torch REQUIRED)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 # add the executable
@@ -15,6 +13,9 @@ PRIVATE
     "${TORCH_LIBRARIES}"
 )
 
+# The following code block is suggested to be used on Windows.
+# According to https://github.com/pytorch/pytorch/issues/25457,
+# the DLLs need to be copied to avoid memory errors.
 if (MSVC)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
   add_custom_command(TARGET TorchExample
@@ -22,7 +23,7 @@ if (MSVC)
                      COMMAND ${CMAKE_COMMAND} -E copy_if_different
                      ${TORCH_DLLS}
                      $<TARGET_FILE_DIR:TorchExample>)
-endif (MSVC)
+endif(MSVC)
 
 set(COMPILE_OPTIONS "")
 
@@ -40,6 +41,10 @@ target_compile_definitions(TorchExample PRIVATE ${COMPILE_OPTIONS})
 
 target_include_directories(TorchExample 
 PRIVATE
+    "${TORCH_INSTALL_PREFIX}/"
+    "${TORCH_INSTALL_PREFIX}/include/"
+    "${TORCH_INSTALL_PREFIX}/include/torch/"
+    "${TORCH_INSTALL_PREFIX}/include/torch/csrc/"
     "${PROJECT_BINARY_DIR}"
     "${PROJECT_BINARY_DIR}"
     "${LIBRARY_OUTPUT_PATH}"

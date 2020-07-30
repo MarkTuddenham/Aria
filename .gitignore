@@ -3,6 +3,8 @@ tmp/
 bin/
 _build/
 
+libtorch*
+
 results.json
 
 .vs/

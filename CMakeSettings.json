@@ -6,11 +6,32 @@
             "configurationType": "Debug",
             "buildRoot": "${projectDir}\\out\\build\\${name}",
             "installRoot": "${projectDir}\\out\\install\\${name}",
-            "cmakeCommandArgs": "",
+            "cmakeCommandArgs": "-DCMAKE_PREFIX_PATH=${projectDir}/libtorch-win-shared-with-deps-debug-1.3.1/libtorch/",
             "buildCommandArgs": "-v",
             "ctestCommandArgs": "",
             "inheritEnvironments": [ "msvc_x64_x64" ],
-            "variables": []
+            "variables": [
+                {
+                    "name": "TORCH_LIBRARY",
+                    "value": "${projectDir}/libtorch-win-shared-with-deps-debug-1.3.1/libtorch/lib/torch.lib",
+                    "type": "FILEPATH"
+                },
+                {
+                    "name": "Torch_DIR",
+                    "value": "${projectDir}/libtorch-win-shared-with-deps-debug-1.3.1/libtorch/share/cmake/Torch",
+                    "type": "PATH"
+                },
+                {
+                    "name": "Caffe2_DIR",
+                    "value": "${projectDir}/libtorch-win-shared-with-deps-debug-1.3.1/libtorch/share/cmake/Caffe2",
+                    "type": "PATH"
+                },
+                {
+                    "name": "C10_LIBRARY",
+                    "value": "${projectDir}/libtorch-win-shared-with-deps-debug-1.3.1/libtorch/lib/c10.lib",
+                    "type": "FILEPATH"
+                }
+            ]
         },
         {
             "name": "x64-Release",
@@ -18,7 +39,7 @@
             "configurationType": "RelWithDebInfo",
             "buildRoot": "${projectDir}\\out\\build\\${name}",
             "installRoot": "${projectDir}\\out\\install\\${name}",
-            "cmakeCommandArgs": "",
+            "cmakeCommandArgs": "-DCMAKE_PREFIX_PATH=${projectDir}/libtorch-win-shared-with-deps-1.3.1/libtorch/",
             "buildCommandArgs": "-v",
             "ctestCommandArgs": "",
             "inheritEnvironments": [ "msvc_x64_x64" ],

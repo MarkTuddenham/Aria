@@ -8,6 +8,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
+
 add_subdirectory(basic)
 
 find_package(Torch)

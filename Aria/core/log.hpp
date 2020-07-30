@@ -12,10 +12,10 @@ class Log
 {
 
 public:
-    enum Level
+    enum class Level
     {
         CRITICAL,
-        ERROR,
+        ERR,
         WARN,
         INFO,
         TRACE,
@@ -23,7 +23,7 @@ public:
     };
 
     static void init();
-    static void init(const Log::Level &);
+    static void init(const Log::Level&);
 
     inline static std::shared_ptr<spdlog::logger> &get_core_logger() { return s_core_logger; }
     inline static std::shared_ptr<spdlog::logger> &get_client_logger() { return s_client_logger; }

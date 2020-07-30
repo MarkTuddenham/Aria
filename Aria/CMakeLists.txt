@@ -10,19 +10,24 @@ add_library(Aria
             core/utils.cpp
             )
             
-set(COMPILE_OPTIONS "")
+add_subdirectory(vendor/spdlog/)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    list(APPEND COMPILE_OPTIONS "DEBUG" "PROFILING")
-endif()
+
+set(TARGET_COMPILE_DEFINITIONS "")
+set(TARGET_PRIVATE_LINK_LIBS "")
 
 if (WIN32)
-    list(APPEND COMPILE_OPTIONS "PLATFORM_WINDOWS")
+    list(APPEND TARGET_COMPILE_DEFINITIONS "PLATFORM_WINDOWS")
 elseif(UNIX)
-    list(APPEND COMPILE_OPTIONS "PLATFORM_LINUX")
+    list(APPEND TARGET_COMPILE_DEFINITIONS "PLATFORM_LINUX")
+endif()
+target_compile_definitions(Aria PRIVATE ${TARGET_COMPILE_DEFINITIONS})
+
+
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    list(APPEND TARGET_COMPILE_DEFINITIONS "DEBUG" "PROFILING")
 endif()
 
-target_compile_definitions(Aria PRIVATE ${COMPILE_OPTIONS})
 
 if(MSVC)
     target_compile_options(Aria
@@ -30,19 +35,28 @@ if(MSVC)
         "/W4"
     )
 else()
-    target_compile_options(Aria
-    PRIVATE
-        "-O1" 
-        # "-pthread"
-        "-Wextra"
-        "-Wpedantic"
-        "-Wshadow"
-        "-Wnon-virtual-dtor"
-        "-Wnull-dereference"
-        "-Wold-style-cast"
-        "-Wuseless-cast"
-        "-Wformat=2"
-    )
+    if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        target_compile_options(Aria
+        PRIVATE
+            "-O1"
+            "-Wextra"
+            "-Wpedantic"
+            "-Wshadow"
+            "-Wnon-virtual-dtor"
+            "-Wnull-dereference"
+            "-Wold-style-cast"
+            "-Wuseless-cast"
+            "-Wformat=2"
+            "-fsanitize=address"
+            "-Wreorder"
+        )
+        list(APPEND TARGET_PRIVATE_LINK_LIBS -fsanitize=address)
+    else()
+        target_compile_options(Aria
+        PRIVATE
+            "-O3"
+        )
+    endif()
 endif()
 
 target_include_directories(Aria
@@ -55,9 +69,10 @@ INTERFACE
     "${PROJECT_SOURCE_DIR}/Aria"
 )
 
-add_subdirectory(vendor/spdlog/)
 
 target_link_libraries(Aria
+PRIVATE
+    ${TARGET_PRIVATE_LINK_LIBS}
 PUBLIC
     spdlog
 )
